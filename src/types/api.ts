@@ -1,0 +1,20 @@
+export interface ApiResponse<T> {
+    data: T;
+    message?: string;
+    status: number;
+}
+
+export interface PaginatedResponse<T> extends ApiResponse<T> {
+    meta: {
+        currentPage: number;
+        totalPages: number;
+        totalItems: number;
+        itemsPerPage: number;
+    };
+}
+
+export interface ApiError {
+    message: string;
+    status: number;
+    errors?: Record<string, string[]>;
+} 

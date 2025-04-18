@@ -37,7 +37,6 @@ export const AuthProvider = ({ children }) => {
     }
     setLoading(false);
   });
-  const { data } = useQuery({ queryKey: ['refresh'], queryFn: new AuthService().refresh })
 
   // Função para efetuar o login
   const login = async (email: string, password: string) => {
@@ -50,15 +49,22 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setToken(null);
     setUser(null);
+    window.location.href = '/login';
   };
 
   // Ao montar, tenta renovar a sessão usando o refresh token armazenado no cookie HttpOnly
   useEffect(() => {
-    if (data) {
-      setToken(data.token);
-      setUser(data.user);
+    const getToken = async () => {
+      const response = await new AuthService().refresh();
+      setToken(response.token);
+      setUser(response.user);
+      setLoading(false);
     }
-  }, [data]);
+    if (!token && window.location.pathname !== '/login') {
+      setLoading(true);
+      getToken();
+    }
+  }, [token]);
 
   // Interceptor para adicionar o token em requisições futuras
   api.interceptors.request.use((config) => {

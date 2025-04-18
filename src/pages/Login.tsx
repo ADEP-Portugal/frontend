@@ -86,7 +86,7 @@ const Login = () => {
                                                                 type="button"
                                                                 variant="link"
                                                                 size="sm"
-                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-0"
+                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground p-0"
                                                                 onClick={() => setShowPassword(!showPassword)}
                                                                 tabIndex={-1}
                                                             >
@@ -103,7 +103,7 @@ const Login = () => {
                                         />
                                     </div>
 
-                                    <Button type="submit" className="w-full cursor-pointer" disabled={loading}>
+                                    <Button type="submit" className="w-full" disabled={loading}>
                                         {loading ? <Spinner size='small' /> : "Acessar"}
                                     </Button>
                                 </form>

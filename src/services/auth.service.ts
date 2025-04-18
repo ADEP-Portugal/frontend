@@ -12,7 +12,8 @@ export class AuthService extends ApiService<User> {
   async login(data: LoginPayload): Promise<LoginResponse> {
     const response = await this.api.post<LoginResponse>(
       `${this.endpoint}/login`,
-      data
+      data,
+      { withCredentials: true }
     );
     return response.data;
   }

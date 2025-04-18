@@ -108,7 +108,7 @@ const ResetPassword = () => {
                                         </button>
                                     </div>
                                 </div>
-                                <Button type="submit" className="w-full cursor-pointer">
+                                <Button type="submit" className="w-full">
                                     {loading ? <Spinner size='small' /> : "Alterar senha"}
                                 </Button>
                             </form>

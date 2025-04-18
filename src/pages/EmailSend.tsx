@@ -45,7 +45,7 @@ const EmailSend = () => {
                         </CardHeader>
 
                         <CardContent className='flex justify-center'>
-                            <Button onClick={() => navigate("/login", { replace: true })} type="submit" className="w-full cursor-pointer">
+                            <Button onClick={() => navigate("/login", { replace: true })} type="submit" className="w-full">
                                 Beleza!
                             </Button>
                         </CardContent>
@@ -53,7 +53,7 @@ const EmailSend = () => {
                         <CardFooter className="flex flex-col space-y-4">
                             <div className="text-center text-sm text-muted-foreground">
                                 Não recebeu o e-mail?{" "}
-                                <Button variant="link" onClick={handleReSubmit} className="p-0 cursor-pointer">
+                                <Button variant="link" onClick={handleReSubmit} className="p-0">
                                     Re-enviar
                                 </Button>
                             </div>

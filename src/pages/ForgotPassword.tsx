@@ -50,7 +50,7 @@ const ForgotPassword = () => {
                                         required
                                     />
                                 </div>
-                                <Button type="submit" className="w-full cursor-pointer">
+                                <Button type="submit" className="w-full">
                                     {loading ? <Spinner size='small' /> : "Enviar"}
                                 </Button>
                             </form>

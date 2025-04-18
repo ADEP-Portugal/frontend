@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarIcon, CirclePlus, Clock, ClockIcon, FileIcon, MapPin, Pen, StickyNote, Trash } from "lucide-react";
+import { BriefcaseBusinessIcon, CalendarIcon, CirclePlus, Clock, ClockIcon, FileIcon, MapPin, Pen, PhoneIcon, StickyNote, Trash, UserIcon } from "lucide-react";
 import { Header } from "../components/header";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
@@ -19,67 +19,93 @@ import { format } from "date-fns";
 import { Box } from "../components/ui/box";
 import { Textarea } from "../components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../components/ui/alert-dialog";
+import { TypeAppointment } from "../types/type-appointment";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip";
 
 const FormSchema = z.object({
-    title: z.string({ required_error: "Campo obrigatório" }),
+    name: z.string({ required_error: "Campo obrigatório" }),
+    reason: z.string({ required_error: "Campo obrigatório", }),
     date: z.string({ required_error: "Campo obrigatório", }),
     time: z.string({ required_error: "Campo obrigatório", }),
-    local: z.string({ required_error: "Campo obrigatório", }),
-    description: z.string({ required_error: "Campo obrigatório", }),
+    typeAppointment: z.string({ required_error: "Campo obrigatório", }),
+    responsible: z.string({ required_error: "Campo obrigatório", }),
+    observation: z.string({ required_error: "Campo obrigatório", }),
 })
 
-const Agenda = () => {
+const Appointment = () => {
     const [date, setDate] = React.useState<Date>()
     const eventList = [
-        
         {
-            title: "Evento 1",
-            date: "15/10/2023",
+            name: "Leonardo Sarto",
+            date: "17/04/2025",
             time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
+            reason: "Não estou conseguindo me legalizar",
+            typeAppointment: TypeAppointment.PRESENCIAL,
+            responsible: "Edson",
+            observation: "Levar documentos",
         },
         {
-            title: "Evento 1",
-            date: "2023-10-01",
+            name: "Leonardo Sarto",
+            date: "17/04/2025",
             time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
+            reason: "Não estou conseguindo me legalizar",
+            typeAppointment: TypeAppointment.TELEFONICO,
+            responsible: "Edson",
+            observation: "Levar documentos",
         },
         {
-            title: "Evento 1",
-            date: "2023-10-01",
+            name: "Leonardo Sarto",
+            date: "17/04/2025",
             time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
+            reason: "Não estou conseguindo me legalizar",
+            typeAppointment: TypeAppointment.TELEFONICO,
+            responsible: "Edson",
+            observation: "Levar documentos",
         },
         {
-            title: "Evento 1",
-            date: "2023-10-01",
+            name: "Leonardo Sarto",
+            date: "17/04/2025",
             time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
+            reason: "Não estou conseguindo me legalizar",
+            typeAppointment: TypeAppointment.TELEFONICO,
+            responsible: "Edson",
+            observation: "Levar documentos",
         },
         {
-            title: "Evento 1",
-            date: "2023-10-01",
+            name: "Leonardo Sarto",
+            date: "17/04/2025",
             time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
+            reason: "Não estou conseguindo me legalizar",
+            typeAppointment: TypeAppointment.TELEFONICO,
+            responsible: "Edson",
+            observation: "Levar documentos",
         },
         {
-            title: "Evento 1",
-            date: "2023-10-01",
+            name: "Leonardo Sarto",
+            date: "17/04/2025",
             time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
+            reason: "Não estou conseguindo me legalizar",
+            typeAppointment: TypeAppointment.TELEFONICO,
+            responsible: "Edson",
+            observation: "Levar documentos",
         },
         {
-            title: "Evento 1",
-            date: "2023-10-01",
+            name: "Leonardo Sarto",
+            date: "17/04/2025",
             time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
+            reason: "Não estou conseguindo me legalizar",
+            typeAppointment: TypeAppointment.TELEFONICO,
+            responsible: "Edson",
+            observation: "Levar documentos",
+        },
+        {
+            name: "Leonardo Sarto",
+            date: "17/04/2025",
+            time: "10:00",
+            reason: "Não estou conseguindo me legalizar",
+            typeAppointment: TypeAppointment.TELEFONICO,
+            responsible: "Edson",
+            observation: "Levar documentos",
         },
     ];
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -96,22 +122,37 @@ const Agenda = () => {
                             <DialogTrigger>
                                 <Button>
                                     <CirclePlus />
-                                    Adicionar Evento
+                                    Adicionar Atendimento
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Adicionar Novo Evento</DialogTitle>
+                                    <DialogTitle>Adicionar Novo Atendimento</DialogTitle>
                                 </DialogHeader>
                                 <Form {...form}>
                                     <form className="flex flex-col gap-4 py-4">
                                         <FormField
                                             control={form.control}
-                                            name="title"
+                                            name="name"
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>
-                                                        <span>Título do Evento</span>
+                                                        <span>Nome do Cliente</span>
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <Input {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="reason"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>
+                                                        <span>Motivo</span>
                                                     </FormLabel>
                                                     <FormControl>
                                                         <Input {...field} />
@@ -178,28 +219,53 @@ const Agenda = () => {
                                                 )}
                                             />
                                         </div>
+                                        <div className="flex gap-10">
+                                            <FormField
+                                                control={form.control}
+                                                name="typeAppointment"
+                                                render={({ field }) => (
+                                                    <FormItem className="w-full">
+                                                        <FormLabel>
+                                                            <span>Tipo de Atendimento</span>
+                                                        </FormLabel>
+                                                        <FormControl>
+                                                            <Select defaultValue="in_person" {...field}>
+                                                                <SelectTrigger className="w-[210px]">
+                                                                    <SelectValue placeholder="Selecione tipo de atendimento" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="in_person">Presencial</SelectItem>
+                                                                    <SelectItem value="telephone">Telefónico</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name="responsible"
+                                                render={({ field }) => (
+                                                    <FormItem className="w-full">
+                                                        <FormLabel>
+                                                            <span>Funcionário Responsável</span>
+                                                        </FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
                                         <FormField
                                             control={form.control}
-                                            name="local"
+                                            name="observation"
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>
-                                                        <span>Local</span>
-                                                    </FormLabel>
-                                                    <FormControl>
-                                                        <Input {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="description"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>
-                                                        <span>Descrição</span>
+                                                        <span>Observações</span>
                                                     </FormLabel>
                                                     <FormControl>
                                                         <Textarea {...field} />
@@ -216,18 +282,18 @@ const Agenda = () => {
                                             Cancelar
                                         </Button>
                                     </DialogClose>
-                                    <Button type="submit">Salvar Evento</Button>
+                                    <Button type="submit">Salvar Atendimento</Button>
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
                         <div className="flex gap-6 w-8/12">
-                            <Input placeholder="Buscar eventos..." />
+                            <Input placeholder="Buscar atendimentos..." />
                             <Select>
                                 <SelectTrigger className="w-[255px]">
                                     <SelectValue placeholder="Selecione o período" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">Todos os Eventos</SelectItem>
+                                    <SelectItem value="all">Todos os Atendimentos</SelectItem>
                                     <SelectItem value="today">Hoje</SelectItem>
                                     <SelectItem value="week">Esta Semana</SelectItem>
                                     <SelectItem value="month">Este Mês</SelectItem>
@@ -236,24 +302,32 @@ const Agenda = () => {
                         </div>
                     </div>
                     <div className="grid grid-cols-4 gap-6">
-                        {eventList.length === 0 && (
-                            <div className="flex flex-col items-center justify-center col-span-4">
-                                <StickyNote className="text-gray-500" size={100} />
-                                <h1 className="text-gray-500 text-2xl">Nenhum evento encontrado</h1>
-                                <p className="text-gray-500">Adicione um evento para começar</p>
-                            </div>
-                        )}
-                        {eventList.length > 0 && eventList.map((event, index) => (
-                            <Card className="w-[280px]" key={index}>
+                        {eventList.map((event, index) => (
+                            <Card className="w-[280px] mt-4" key={index}>
                                 <CardHeader>
                                     <CardTitle className="flex justify-between items-center">
-                                        {event.title}
-                                        <span className="text-sm text-gray-500 p-1 rounded-md">{event.date}, {event.time}</span>
+                                        <span>Atendimento</span>
+                                        <span className="text-sm text-gray-500">{event.date}, {event.time}</span>
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex flex-col gap-2">
-                                    <p className="flex gap-1"><MapPin />{event.local}</p>
-                                    <p className="flex gap-1"><FileIcon />{event.description}</p>
+                                    <p className="flex gap-1"><UserIcon />{event.name}</p>
+                                    <p className="flex gap-1"><FileIcon />
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <span className="line-clamp-1">
+                                                        {event.reason}
+                                                    </span>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>{event.reason}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    </p>
+                                    <p className="flex gap-1">{event.typeAppointment === TypeAppointment.PRESENCIAL ? <MapPin /> : <PhoneIcon />}{event.typeAppointment}</p>
+                                    <p className="flex gap-1"><BriefcaseBusinessIcon />{event.responsible}</p>
                                 </CardContent>
                                 <CardFooter className="flex justify-between">
                                     <Button variant="outline"><Pen />Editar</Button>
@@ -265,7 +339,7 @@ const Agenda = () => {
                                             <AlertDialogHeader>
                                                 <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                                                 <AlertDialogDescription>
-                                                    Esse evento será excluído permanentemente e não poderá ser desfeito.
+                                                    Esse atendimento será excluído permanentemente e não poderá ser desfeito.
                                                 </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
@@ -285,4 +359,4 @@ const Agenda = () => {
     );
 };
 
-export default Agenda;
+export default Appointment;

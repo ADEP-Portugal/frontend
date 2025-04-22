@@ -9,20 +9,17 @@ export class AuthService extends ApiService<User> {
     super("/auth");
   }
 
-  async login(data: LoginPayload): Promise<LoginResponse> {
-    const response = await this.api.post<LoginResponse>(
-      `${this.endpoint}/login`,
-      data,
-      { withCredentials: true }
-    );
+  async login(data: LoginPayload): Promise<User> {
+    const response = await this.api.post<User>(`${this.endpoint}/login`, data, {
+      withCredentials: true,
+    });
     return response.data;
   }
 
-  async refresh(): Promise<LoginResponse> {
-    const response = await this.api.get<LoginResponse>(
-      `${this.endpoint}/refresh`,
-      { withCredentials: true }
-    );
+  async getUserWithToken(): Promise<User> {
+    const response = await this.api.get<User>(this.endpoint, {
+      withCredentials: true,
+    });
     return response.data;
   }
 

@@ -12,6 +12,8 @@ import { Button } from "../components/ui/button";
 import PasswordStrengthBar from "react-password-strength-bar";
 import { Box } from "../components/ui/box";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
+import axios from "axios";
+import { AuthService } from "../services/auth.service";
 
 const FormSchema = z.object({
     fullName: z.string({ required_error: "Campo obrigatório" }),
@@ -21,7 +23,7 @@ const FormSchema = z.object({
 })
 
 const Profile = () => {
-    const { user, setUser } = useAuth();
+    const { user } = useAuth();
     const [loading, setLoading] = React.useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -32,13 +34,18 @@ const Profile = () => {
         },
     })
 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        await new AuthService().getUserWithToken();
+    }
+
     return (
         <div>
             <Header back />
             <div className="flex flex-col items-center justify-center mt-4">
                 <Card className="p-10 w-4/12">
                     <Form {...form}>
-                        <form className="flex flex-col gap-4 py-5">
+                        <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-5">
                             <FormField
                                 control={form.control}
                                 name="fullName"

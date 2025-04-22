@@ -1,17 +1,17 @@
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { useAuth } from '../context/authContext';
 import { Spinner } from '../components/ui/spinner';
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../components/ui/form';
 import { Box } from '../components/ui/box';
+import { useLogin } from '../hooks/auth';
+import { toast } from 'sonner';
 
 const FormSchema = z.object({
     email: z.string({ required_error: "Campo obrigatório" }).email({ message: "Email inválido" }),
@@ -19,23 +19,42 @@ const FormSchema = z.object({
 })
 
 const Login = () => {
-    const { login, loading } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { mutateAsync } = useLogin((response) => {
+        localStorage.setItem("user", JSON.stringify(response));
+        navigate("/", { replace: true });
+    }, (error) => {
+        if (error.status === 401) {
+            toast.error("Credenciais inválidas");
+        } else {
+            toast.error("Erro ao realizar login");
+        }
+        setLoading(false);
+    });
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
     })
 
     async function onSubmit(values: z.infer<typeof FormSchema>) {
-        await login(values.email, values.password);
-        navigate("/", { replace: true });
+        setLoading(true);
+        await mutateAsync({ email: values.email, password: values.password });
+        toast.success('Login realizado com sucesso!');
     };
+
+    useEffect(() => {
+        if (localStorage.getItem("expiredSession") === "true") {
+            toast.error("Sessão expirada. Faça login novamente.");
+            localStorage.removeItem("expiredSession");
+        }
+    }, []);
 
     return (
         <div className="min-h-screen flex flex-col">
-            <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-muted/30">
-                <div className="w-full max-w-md animate-fade-in-up">
+            <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+                <div className="w-full max-w-md">
                     <Card className="border-border/40 shadow-lg">
                         <CardHeader className="space-y-1">
                             <img className='align-self-center' src='logo.png' width={1000} height={1000}></img>

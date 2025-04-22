@@ -1,12 +1,15 @@
-import { ChartBarIcon, FileTextIcon, HomeIcon, ListTodoIcon, LogOutIcon, MoveLeftIcon, UserIcon, UsersIcon } from "lucide-react";
+import { ChartBarIcon, FileTextIcon, HomeIcon, ListTodoIcon, LogOutIcon, MoonIcon, MoveLeftIcon, SunIcon, UserIcon, UsersIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
-import { Link } from "react-router-dom";
+import { useTheme } from "./theme-provider";
 
 export function Header({ back }: { back?: boolean }) {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const { setTheme } = useTheme();
     const navItems = [
         {
             title: "Inicial",
@@ -25,12 +28,12 @@ export function Header({ back }: { back?: boolean }) {
         },
         {
             title: "Registros de Processos",
-            url: "/proceeding",
+            url: "/lawsuit",
             icon: FileTextIcon,
         },
         {
             title: "Painel de Tarefas",
-            url: "#",
+            url: "/tasks",
             icon: ListTodoIcon,
         },
         {
@@ -40,7 +43,7 @@ export function Header({ back }: { back?: boolean }) {
         },
         {
             title: "Área Associados",
-            url: "#",
+            url: "/employee",
             icon: UsersIcon,
         },
         {
@@ -49,6 +52,11 @@ export function Header({ back }: { back?: boolean }) {
             icon: UserIcon,
         },
     ];
+
+    function logout() {
+        localStorage.removeItem("user");
+        navigate("/login", { replace: true });
+    };
 
     return (
         <header className="flex bg-[#267393] text-white p-4 pb-6 rounded-b-3xl items-center justify-between">
@@ -60,12 +68,32 @@ export function Header({ back }: { back?: boolean }) {
                     <img src='logo.png' width={350} height={350} />
                 </div>}
             <h1 className="lg:text-4xl font-semibold">Assistente ADEP</h1>
-            <div>
+            <div className="flex items-center gap-4">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon">
+                            <SunIcon color="black" className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                            <MoonIcon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                            <span className="sr-only">Toggle theme</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setTheme("light")}>
+                            Claro
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme("dark")}>
+                            Escuro
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme("system")}>
+                            Sistema
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <Avatar className="w-11 h-11">
                             <AvatarFallback>
-                                <UserIcon color="black" />
+                                <UserIcon />
                             </AvatarFallback>
                         </Avatar>
                     </DropdownMenuTrigger>
@@ -83,14 +111,14 @@ export function Header({ back }: { back?: boolean }) {
                         {navItems.map((item) => (
                             <Link key={item.title} to={item.url}>
                                 <DropdownMenuItem>
-                                    <item.icon color="black" />
+                                    <item.icon />
                                     {item.title}
                                 </DropdownMenuItem>
                             </Link>
                         ))}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => logout()}>
-                            <LogOutIcon color="black" />
+                            <LogOutIcon />
                             Sair
                         </DropdownMenuItem>
                     </DropdownMenuContent>

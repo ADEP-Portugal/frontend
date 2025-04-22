@@ -1,13 +1,14 @@
 import { useMutation } from "@tanstack/react-query";
 import { AuthService } from "../services/auth.service";
-import { LoginPayload, LoginResponse } from "../types/login";
+import { LoginPayload } from "../types/login";
 import { SignupPayload } from "../types/signup";
 import { ResetPasswordPayload } from "../types/reset-password";
 import { AxiosError } from "axios";
+import { User } from "../types/user";
 
 const authService = new AuthService();
 
-export function useLogin(onSuccess: (token: LoginResponse) => void, onError: (error: AxiosError) => void) {
+export function useLogin(onSuccess: (token: User) => void, onError: (error: AxiosError) => void) {
   return useMutation({
     mutationFn: (data: LoginPayload) => authService.login(data),
     mutationKey: ["login"],

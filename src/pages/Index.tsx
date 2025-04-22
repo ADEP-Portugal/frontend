@@ -23,12 +23,12 @@ const Index = () => {
     },
     {
       title: "Registros de Processos",
-      url: "/proceeding",
+      url: "/lawsuit",
       icon: FileText,
     },
     {
       title: "Painel de Tarefas",
-      url: "#",
+      url: "/tasks",
       icon: ListTodo,
     },
     {
@@ -38,7 +38,7 @@ const Index = () => {
     },
     {
       title: "Área Associados",
-      url: "#",
+      url: "/employee",
       icon: Users,
     },
   ];
@@ -70,7 +70,7 @@ const Index = () => {
   return (
     <div>
       <Header/>
-      <nav className="flex bg-[#E5EEF1] p-4 items-center justify-between">
+      <nav className="flex bg-card p-4 items-center justify-between">
         {navItems.map((item) => (
           <div key={item.title}>
             <Link to={item.url}>
@@ -94,7 +94,7 @@ const Index = () => {
           />
         </Card>
       </div>
-      <footer className="flex bg-[#E5EEF1] p-4 items-center justify-center gap-10">
+      <footer className="flex p-4 items-center justify-center gap-10">
         {footerItems.map((item) => (
           <div key={item.title}>
             <Button size="lg" variant="outline" className="border-2 border-[#61A5C2] justify-start rounded-full bg-white hover:bg-[#267393] hover:text-white text-[#267393]">

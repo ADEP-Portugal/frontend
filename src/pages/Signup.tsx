@@ -47,8 +47,8 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-muted/30">
-        <div className="w-full max-w-md animate-fade-in-up">
+      <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md">
           <Card className="border-border/40 shadow-lg">
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl font-bold text-center">

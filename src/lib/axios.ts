@@ -2,9 +2,10 @@ import axios from 'axios';
 import { AuthService } from '../services/auth.service';
 
 const api = axios.create({
-    baseURL: 'https://2004-2804-a44-60de-c100-8823-7a68-2bf1-79c7.ngrok-free.app',
+    baseURL: 'https://34a5-2804-a44-60de-c100-8823-7a68-2bf1-79c7.ngrok-free.app',
     headers: {
         'Content-Type': 'application/json',
+        "ngrok-skip-browser-warning": "69420",
     },
 });
 

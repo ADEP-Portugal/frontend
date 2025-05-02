@@ -16,7 +16,6 @@ export class EventService extends ApiService<Event> {
       this.endpoint,
       {
         params: { page: 1, limit: 16, name, period },
-        withCredentials: true,
       }
     );
     return response.data;

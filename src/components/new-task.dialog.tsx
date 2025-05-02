@@ -13,65 +13,102 @@ import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popove
 import { Calendar } from "../components/ui/calendar";
 import { cn } from "../lib/utils";
 import React from "react";
-import { format } from "date-fns";
 import { Textarea } from "../components/ui/textarea";
-import { TaskPriority } from "../types/task-priority";
+import { getTaskLabel, TaskPriority } from "../types/task-priority";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command";
-
-const frameworks = [
-    {
-        value: "next.js",
-        label: "Next.js",
-    },
-    {
-        value: "sveltekit",
-        label: "SvelteKit",
-    },
-    {
-        value: "nuxt.js",
-        label: "Nuxt.js",
-    },
-    {
-        value: "remix",
-        label: "Remix",
-    },
-    {
-        value: "astro",
-        label: "Astro",
-    },
-]
+import { pt } from "date-fns/locale";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { formatFullDatePtBr } from "../util/date.util";
+import { LawsuitService } from "../services/lawsuit.service";
+import { LawsuitOrderType } from "../types/lawsuit-order-type";
+import { UserService } from "../services/user.service";
+import { TaskService } from "../services/task.service";
+import { Task } from "../types/task";
+import { toast } from "sonner";
+import { Spinner } from "./ui/spinner";
+import { format } from "date-fns";
 
 const FormSchema = z.object({
+    title: z.string({ required_error: "Campo obrigatório", }),
     responsible: z.string({ required_error: "Campo obrigatório", }),
-    status: z.string({ required_error: "Campo obrigatório", }),
-    type: z.string({ required_error: "Campo obrigatório", }),
-    name: z.string({ required_error: "Campo obrigatório", }),
-    birthday: z.string({ required_error: "Campo obrigatório", }),
+    lawsuit: z.string().optional(),
+    client: z.string({ required_error: "Campo obrigatório", }),
     phone: z.string({ required_error: "Campo obrigatório", }),
-    email: z.string({ required_error: "Campo obrigatório", }),
-    documentType: z.string({ required_error: "Campo obrigatório", }),
-    document: z.string({ required_error: "Campo obrigatório", }),
-    emissionDate: z.string({ required_error: "Campo obrigatório", }),
-    expirationDate: z.string({ required_error: "Campo obrigatório", }),
-    orderDate: z.string({ required_error: "Campo obrigatório", }),
+    deadline: z.string({ required_error: "Campo obrigatório", }),
     priority: z.string({ required_error: "Campo obrigatório", }),
     description: z.string({ required_error: "Campo obrigatório", }),
 })
 
 const NewTask = () => {
-    const [birthday, setBirthday] = React.useState<Date>()
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
     })
+    const queryClient = useQueryClient();
+    const [deadline, setDeadline] = React.useState<Date>()
     const [comboboxOpen, setComboboxOpen] = React.useState(false)
-    const [value, setValue] = React.useState("")
+    const [comboboxLawsuitOpen, setComboboxLawsuitOpen] = React.useState(false)
+    const [responsible, setResponsible] = React.useState("");
+    const [lawsuitValue, setLawsuitValue] = React.useState("");
+    const [loading, setLoading] = React.useState(false);
+    const [open, setOpen] = React.useState<boolean>(false);
+    const taskService = new TaskService();
+    const lawsuitService = new LawsuitService();
+    const userService = new UserService();
+    const { data } = useQuery({
+        queryKey: ['users'],
+        queryFn: () => userService.fetchAll(),
+    });
+    const { data: lawsuitList } = useQuery({
+        queryKey: ['lawsuits-summary'],
+        queryFn: () => lawsuitService.fetchSummary(),
+    });
+
+    const mutation = useMutation({
+        mutationFn: (createRequest: Task) => taskService.create(createRequest),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            setResponsible("");
+            setDeadline(undefined);
+            setLawsuitValue("");
+            form.reset();
+            toast.success("Tarefa criada com sucesso!");
+            setLoading(false);
+            setOpen(false);
+        }
+    });
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const isValid = await form.trigger();
+        if (!isValid) {
+            return;
+        }
+        setLoading(true);
+        const data = form.getValues();
+        const taskData: Task = {
+            client: data.client,
+            phone: data.phone,
+            deadline: data.deadline,
+            description: data.description,
+            title: data.title,
+            lawsuitId: data.lawsuit,
+            responsible: data.responsible,
+            priority: data.priority as TaskPriority,
+        };
+        mutation.mutate(taskData);
+    }
+
+    const resetCreateTask = () => {
+        setResponsible("");
+        setDeadline(undefined);
+        setLawsuitValue("");
+        form.reset();
+    }
 
     return (
-        <Dialog onOpenChange={(open) => {
-            if (!open) {
-                form.reset()
-                setBirthday(undefined)
-            }
+        <Dialog open={open} onOpenChange={(open) => {
+            if (!open) resetCreateTask();
+            setOpen(open);
         }}>
             <DialogTrigger>
                 <Button>
@@ -84,10 +121,10 @@ const NewTask = () => {
                     <DialogTitle>Adicionar Nova Tarefa</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
-                    <form className="flex flex-col gap-4 py-4">
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-4">
                         <FormField
                             control={form.control}
-                            name="responsible"
+                            name="title"
                             render={({ field }) => (
                                 <FormItem className="w-full">
                                     <FormLabel>
@@ -102,11 +139,11 @@ const NewTask = () => {
                         />
                         <FormField
                             control={form.control}
-                            name="documentType"
+                            name="responsible"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        <span>Responsável</span>
+                                        <span>Funcionário Responsável</span>
                                     </FormLabel>
                                     <FormControl>
                                         <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
@@ -117,8 +154,8 @@ const NewTask = () => {
                                                     aria-expanded={open}
                                                     className="w-full justify-between"
                                                 >
-                                                    {value
-                                                        ? frameworks.find((framework) => framework.value === value)?.label
+                                                    {responsible
+                                                        ? data != null && data.find((associate) => associate.id === responsible)?.fullName
                                                         : "Selecione o funcionário"}
                                                     <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                 </Button>
@@ -129,22 +166,81 @@ const NewTask = () => {
                                                     <CommandList>
                                                         <CommandEmpty>Nenhum funcionário encontrado</CommandEmpty>
                                                         <CommandGroup>
-                                                            {frameworks.map((framework) => (
+                                                            {data != null && data.map((user) => (
                                                                 <CommandItem
-                                                                    key={framework.value}
-                                                                    value={framework.value}
+                                                                    key={user.id}
+                                                                    value={user.id}
                                                                     onSelect={(currentValue) => {
-                                                                        setValue(currentValue === value ? "" : currentValue)
-                                                                        setComboboxOpen(false)
+                                                                        setResponsible(currentValue);
+                                                                        setComboboxOpen(false);
+                                                                        form.setValue("responsible", currentValue);
                                                                     }}
                                                                 >
                                                                     <CheckIcon
                                                                         className={cn(
                                                                             "mr-2 h-4 w-4",
-                                                                            value === framework.value ? "opacity-100" : "opacity-0"
+                                                                            responsible === user.id ? "opacity-100" : "opacity-0"
                                                                         )}
                                                                     />
-                                                                    {framework.label}
+                                                                    {user.fullName}
+                                                                </CommandItem>
+                                                            ))}
+                                                        </CommandGroup>
+                                                    </CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="lawsuit"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        <span>Processo Relacionado</span>
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Popover open={comboboxLawsuitOpen} onOpenChange={setComboboxLawsuitOpen}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    role="combobox"
+                                                    aria-expanded={open}
+                                                    className="w-full justify-between"
+                                                >
+                                                    {lawsuitValue
+                                                        ? lawsuitList != null && `${lawsuitList.find((lawsuit) => lawsuit.id === lawsuitValue)?.client} - ${LawsuitOrderType[lawsuitList.find((lawsuit) => lawsuit.id === lawsuitValue)?.orderType as keyof typeof LawsuitOrderType]}`
+                                                        : "Selecione o processo"}
+                                                    <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[460px] p-0">
+                                                <Command>
+                                                    <CommandInput placeholder="Busque por processos..." />
+                                                    <CommandList>
+                                                        <CommandEmpty>Nenhum funcionário encontrado</CommandEmpty>
+                                                        <CommandGroup>
+                                                            {lawsuitList != null && lawsuitList.map((lawsuit) => (
+                                                                <CommandItem
+                                                                    key={lawsuit.id}
+                                                                    value={lawsuit.id}
+                                                                    onSelect={(currentValue) => {
+                                                                        setLawsuitValue(currentValue);
+                                                                        setComboboxLawsuitOpen(false);
+                                                                        form.setValue("lawsuit", currentValue);
+                                                                    }}
+                                                                >
+                                                                    <CheckIcon
+                                                                        className={cn(
+                                                                            "mr-2 h-4 w-4",
+                                                                            lawsuitValue === lawsuit.id ? "opacity-100" : "opacity-0"
+                                                                        )}
+                                                                    />
+                                                                    {lawsuit.client} {LawsuitOrderType[lawsuit.orderType as keyof typeof LawsuitOrderType]}
                                                                 </CommandItem>
                                                             ))}
                                                         </CommandGroup>
@@ -160,7 +256,7 @@ const NewTask = () => {
                         <div className="flex gap-10">
                             <FormField
                                 control={form.control}
-                                name="responsible"
+                                name="client"
                                 render={({ field }) => (
                                     <FormItem className="w-full">
                                         <FormLabel>
@@ -175,7 +271,7 @@ const NewTask = () => {
                             />
                             <FormField
                                 control={form.control}
-                                name="document"
+                                name="phone"
                                 render={({ field }) => (
                                     <FormItem className="w-full">
                                         <FormLabel>
@@ -192,7 +288,7 @@ const NewTask = () => {
                         <div className="flex gap-10">
                             <FormField
                                 control={form.control}
-                                name="birthday"
+                                name="deadline"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
@@ -205,18 +301,22 @@ const NewTask = () => {
                                                         variant={"outline"}
                                                         className={cn(
                                                             "w-[215px] justify-start text-left font-normal",
-                                                            !birthday && "text-muted-foreground"
+                                                            !deadline && "text-muted-foreground"
                                                         )}
                                                     >
-                                                        {birthday ? format(birthday, "PPP") : <span>Selecione uma data</span>}
+                                                        {deadline ? formatFullDatePtBr(deadline) : <span>Selecione uma data</span>}
                                                         <CalendarIcon className="ml-auto h-4 w-4" />
                                                     </Button>
                                                 </PopoverTrigger>
                                                 <PopoverContent className="w-auto p-0">
                                                     <Calendar
+                                                        locale={pt}
                                                         mode="single"
-                                                        selected={birthday}
-                                                        onSelect={setBirthday}
+                                                        selected={deadline}
+                                                        onSelect={(date) => {
+                                                            setDeadline(date);
+                                                            field.onChange(format(date!, "yyyy-MM-dd"));
+                                                        }}
                                                         initialFocus
                                                     />
                                                 </PopoverContent>
@@ -235,14 +335,14 @@ const NewTask = () => {
                                             <span>Prioridade</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Select form="priority" defaultValue="LOW" {...field}>
+                                            <Select onValueChange={(value: string) => form.setValue("priority", value)} form="priority" {...field}>
                                                 <SelectTrigger className="w-[215px]">
                                                     <SelectValue placeholder="Selecione tipo de pedido" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {Object.entries(TaskPriority).map(([key, value]) => (
                                                         <SelectItem key={key} value={key}>
-                                                            {value}
+                                                            {getTaskLabel(value as TaskPriority)}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
@@ -268,7 +368,7 @@ const NewTask = () => {
                                 </FormItem>
                             )}
                         />
-                        <FormField
+                        {/* <FormField
                             control={form.control}
                             name="document"
                             render={({ field }) => (
@@ -282,17 +382,19 @@ const NewTask = () => {
                                     <FormMessage />
                                 </FormItem>
                             )}
-                        />
+                        /> */}
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button variant="secondary">
+                                    Cancelar
+                                </Button>
+                            </DialogClose>
+                            <Button type="submit">
+                                {loading ? <Spinner size='small' /> : "Salvar Tarefa"}
+                            </Button>
+                        </DialogFooter>
                     </form>
                 </Form>
-                <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant="secondary">
-                            Cancelar
-                        </Button>
-                    </DialogClose>
-                    <Button type="submit">Salvar Processo</Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     );

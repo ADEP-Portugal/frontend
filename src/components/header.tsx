@@ -1,15 +1,20 @@
-import { ChartBarIcon, FileTextIcon, HomeIcon, ListTodoIcon, LogOutIcon, MoonIcon, MoveLeftIcon, SunIcon, UserIcon, UsersIcon } from "lucide-react";
+import { ChartBarIcon, FileTextIcon, HomeIcon, LinkIcon, ListTodoIcon, LogOutIcon, MoonIcon, MoveLeftIcon, SunIcon, UserIcon, UsersIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import { useTheme } from "./theme-provider";
+import { useLogout } from "../hooks/auth";
 
 export function Header({ back }: { back?: boolean }) {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { setTheme } = useTheme();
+    const { mutate } = useLogout(() => {
+        localStorage.removeItem("user");
+        navigate("/login", { replace: true });
+    });
     const navItems = [
         {
             title: "Inicial",
@@ -38,12 +43,12 @@ export function Header({ back }: { back?: boolean }) {
         },
         {
             title: "Relatório",
-            url: "#",
+            url: "/report",
             icon: ChartBarIcon,
         },
         {
             title: "Área Associados",
-            url: "/employee",
+            url: "/associate",
             icon: UsersIcon,
         },
         {
@@ -51,12 +56,12 @@ export function Header({ back }: { back?: boolean }) {
             url: "/profile",
             icon: UserIcon,
         },
+        {
+            title: "Links Úteis",
+            url: "/useful-links",
+            icon: LinkIcon,
+        },
     ];
-
-    function logout() {
-        localStorage.removeItem("user");
-        navigate("/login", { replace: true });
-    };
 
     return (
         <header className="flex bg-[#267393] text-white p-4 pb-6 rounded-b-3xl items-center justify-between">
@@ -67,7 +72,7 @@ export function Header({ back }: { back?: boolean }) {
                 : <div className="rounded-full bg-white w-12 h-12 flex items-center justify-center">
                     <img src='logo.png' width={350} height={350} />
                 </div>}
-            <h1 className="lg:text-4xl font-semibold">Assistente ADEP</h1>
+            <h1 className="lg:text-4xl font-semibold">Assistente ADIP</h1>
             <div className="flex items-center gap-4">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -117,7 +122,7 @@ export function Header({ back }: { back?: boolean }) {
                             </Link>
                         ))}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => logout()}>
+                        <DropdownMenuItem onClick={() => mutate()}>
                             <LogOutIcon />
                             Sair
                         </DropdownMenuItem>

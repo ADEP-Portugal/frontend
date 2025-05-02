@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { AuthService } from '../services/auth.service';
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
@@ -11,6 +12,7 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401 && window.location.pathname !== '/login') {
+            new AuthService().logout();
             localStorage.setItem("expiredSession", "true");
             window.location.href = '/login';
         }

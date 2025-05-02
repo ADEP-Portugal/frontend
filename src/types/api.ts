@@ -6,10 +6,9 @@ export interface ApiResponse<T> {
 
 export interface PaginatedResponse<T> extends ApiResponse<T> {
     meta: {
-        currentPage: number;
-        totalPages: number;
-        totalItems: number;
-        itemsPerPage: number;
+        page: number;
+        total: number;
+        limit: number;
     };
 }
 

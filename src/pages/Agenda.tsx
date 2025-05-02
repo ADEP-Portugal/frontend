@@ -1,284 +1,133 @@
 "use client"
 
-import { CalendarIcon, CirclePlus, Clock, ClockIcon, FileIcon, MapPin, Pen, StickyNote, Trash } from "lucide-react";
+import { FileIcon, Loader2, MapPin, StickyNote, Trash } from "lucide-react";
 import { Header } from "../components/header";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod"
-import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
-import { Calendar } from "../components/ui/calendar";
-import { cn } from "../lib/utils";
-import React from "react";
-import { format } from "date-fns";
-import { Box } from "../components/ui/box";
-import { Textarea } from "../components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../components/ui/alert-dialog";
-
-const FormSchema = z.object({
-    title: z.string({ required_error: "Campo obrigatório" }),
-    date: z.string({ required_error: "Campo obrigatório", }),
-    time: z.string({ required_error: "Campo obrigatório", }),
-    local: z.string({ required_error: "Campo obrigatório", }),
-    description: z.string({ required_error: "Campo obrigatório", }),
-})
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { EventService } from "../services/event.service";
+import NewEvent from "../components/new-event.dialog";
+import { toast } from "sonner";
+import EditEvent from "../components/edit-event.dialog";
+import { formatDateToPtBr } from "../util/date.util";
+import { useEffect, useState } from "react";
+import { getPeriodEventRequestToPtBr, PeriodFilter } from "../types/period-filter";
 
 const Agenda = () => {
-    const [date, setDate] = React.useState<Date>()
-    const eventList = [
-        
-        {
-            title: "Evento 1",
-            date: "15/10/2023",
-            time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
-        },
-        {
-            title: "Evento 1",
-            date: "2023-10-01",
-            time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
-        },
-        {
-            title: "Evento 1",
-            date: "2023-10-01",
-            time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
-        },
-        {
-            title: "Evento 1",
-            date: "2023-10-01",
-            time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
-        },
-        {
-            title: "Evento 1",
-            date: "2023-10-01",
-            time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
-        },
-        {
-            title: "Evento 1",
-            date: "2023-10-01",
-            time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
-        },
-        {
-            title: "Evento 1",
-            date: "2023-10-01",
-            time: "10:00",
-            local: "Local 1",
-            description: "Descrição do evento 1",
-        },
-    ];
-    const form = useForm<z.infer<typeof FormSchema>>({
-        resolver: zodResolver(FormSchema),
-    })
+    const queryClient = useQueryClient();
+    const eventService = new EventService();
+    const [period, setPeriod] = useState<PeriodFilter>(PeriodFilter.ALL);
+    const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const { isLoading, isError, data, error } = useQuery({
+        queryKey: ['events', debouncedSearch, period],
+        queryFn: () => eventService.filter(search, period),
+    });
+    const mutation = useMutation({
+        mutationFn: (id: string | number) => eventService.delete(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['events'] });
+            toast.success("Evento excluído com sucesso!");
+        }
+    });
+
+    useEffect(() => {
+        const timeout = setTimeout(() => setDebouncedSearch(search), 500);
+        return () => clearTimeout(timeout);
+    }, [search]);
 
     return (
         <div>
             <Header back />
             <div className="flex flex-col items-center justify-center mt-4">
-                <Card className="p-10">
-                    <div className="flex justify-between">
-                        <Dialog>
-                            <DialogTrigger>
-                                <Button>
-                                    <CirclePlus />
-                                    Adicionar Evento
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Adicionar Novo Evento</DialogTitle>
-                                </DialogHeader>
-                                <Form {...form}>
-                                    <form className="flex flex-col gap-4 py-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="title"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>
-                                                        <span>Título do Evento</span>
-                                                    </FormLabel>
-                                                    <FormControl>
-                                                        <Input {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <div className="flex gap-10">
-                                            <FormField
-                                                control={form.control}
-                                                name="date"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>
-                                                            <span>Data</span>
-                                                        </FormLabel>
-                                                        <FormControl>
-                                                            <Popover>
-                                                                <PopoverTrigger asChild>
-                                                                    <Button
-                                                                        variant={"outline"}
-                                                                        className={cn(
-                                                                            "w-[210px] justify-start text-left font-normal",
-                                                                            !date && "text-muted-foreground"
-                                                                        )}
-                                                                    >
-                                                                        {date ? format(date, "PPP") : <span>Selecione uma data</span>}
-                                                                        <CalendarIcon className="ml-auto h-4 w-4" />
-                                                                    </Button>
-                                                                </PopoverTrigger>
-                                                                <PopoverContent className="w-auto p-0">
-                                                                    <Calendar
-                                                                        mode="single"
-                                                                        selected={date}
-                                                                        onSelect={setDate}
-                                                                        initialFocus
-                                                                    />
-                                                                </PopoverContent>
-                                                            </Popover>
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="time"
-                                                render={({ field }) => (
-                                                    <FormItem className="w-full">
-                                                        <FormLabel>
-                                                            <span>Hora</span>
-                                                        </FormLabel>
-                                                        <FormControl>
-                                                            <Box className="relative">
-                                                                <ClockIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-0 h-4 w-4" />
-                                                                <Input
-                                                                    {...field}
-                                                                />
-                                                            </Box>
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-                                        <FormField
-                                            control={form.control}
-                                            name="local"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>
-                                                        <span>Local</span>
-                                                    </FormLabel>
-                                                    <FormControl>
-                                                        <Input {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="description"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>
-                                                        <span>Descrição</span>
-                                                    </FormLabel>
-                                                    <FormControl>
-                                                        <Textarea {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </form>
-                                </Form>
-                                <DialogFooter>
-                                    <DialogClose asChild>
-                                        <Button variant="secondary">
-                                            Cancelar
-                                        </Button>
-                                    </DialogClose>
-                                    <Button type="submit">Salvar Evento</Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
-                        <div className="flex gap-6 w-8/12">
-                            <Input placeholder="Buscar eventos..." />
-                            <Select>
-                                <SelectTrigger className="w-[255px]">
-                                    <SelectValue placeholder="Selecione o período" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Todos os Eventos</SelectItem>
-                                    <SelectItem value="today">Hoje</SelectItem>
-                                    <SelectItem value="week">Esta Semana</SelectItem>
-                                    <SelectItem value="month">Este Mês</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-4 gap-6">
-                        {eventList.length === 0 && (
-                            <div className="flex flex-col items-center justify-center col-span-4">
-                                <StickyNote className="text-gray-500" size={100} />
-                                <h1 className="text-gray-500 text-2xl">Nenhum evento encontrado</h1>
-                                <p className="text-gray-500">Adicione um evento para começar</p>
+                <Card className="w-full">
+                    <CardContent>
+                        <div className="flex justify-between">
+                            <NewEvent />
+                            <div className="flex gap-6 w-8/12">
+                                <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar eventos..." />
+                                <Select value={period} onValueChange={(value) => setPeriod(value as PeriodFilter)}>
+                                    <SelectTrigger className="w-[255px]">
+                                        <SelectValue placeholder="Selecione o período" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(PeriodFilter).map(([key, value]) => (
+                                            <SelectItem key={key} value={value}>
+                                                {getPeriodEventRequestToPtBr(value)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
-                        )}
-                        {eventList.length > 0 && eventList.map((event, index) => (
-                            <Card className="w-[280px]" key={index}>
-                                <CardHeader>
-                                    <CardTitle className="flex justify-between items-center">
-                                        {event.title}
-                                        <span className="text-sm text-gray-500 p-1 rounded-md">{event.date}, {event.time}</span>
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col gap-2">
-                                    <p className="flex gap-1"><MapPin />{event.local}</p>
-                                    <p className="flex gap-1"><FileIcon />{event.description}</p>
-                                </CardContent>
-                                <CardFooter className="flex justify-between">
-                                    <Button variant="outline"><Pen />Editar</Button>
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button className="hover:bg-red-700" variant="destructive"><Trash />Excluir</Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Esse evento será excluído permanentemente e não poderá ser desfeito.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                <AlertDialogAction>Continuar</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </CardFooter>
-                            </Card>
-                        ))}
-                    </div>
-
+                        </div>
+                        <div className="mt-5 grid grid-cols-4 gap-6">
+                            {isLoading && (
+                                <div className="flex flex-col items-center justify-center col-span-4">
+                                    <Loader2 className="animate-spin" />
+                                </div>)
+                            }
+                            {isError && (
+                                <div className="text-3xl flex flex-col items-center justify-center col-span-4">
+                                    <StickyNote size={40} className="text-red-500" />
+                                    <span className="text-red-500">Erro ao carregar eventos</span>
+                                    <span className="text-red-500">{error.message}</span>
+                                </div>
+                            )}
+                            {data != null && data.data != null && data.data.length === 0 && (
+                                <div className="text-3xl flex flex-col items-center justify-center col-span-4">
+                                    <StickyNote size={40} className="text-gray-500" />
+                                    <span className="text-gray-500">Nenhum evento encontrado</span>
+                                </div>
+                            )}
+                            {data != null && data.data.length > 0 && data.data.map((event, index) => (
+                                <Card className="w-[280px]" key={index}>
+                                    <CardHeader>
+                                        <CardTitle className="flex justify-between items-center">
+                                            {event.name.substring(0, 12)}
+                                            <span className="text-sm text-gray-500 p-1 rounded-md">{formatDateToPtBr(new Date(event.date))}, {event.time}</span>
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="flex flex-col gap-2">
+                                        <p className="flex gap-1">
+                                            <MapPin />
+                                            <span className="line-clamp-1">
+                                                {event.location.substring(0, 26)}
+                                            </span>
+                                        </p>
+                                        <p className="flex gap-1">
+                                            <FileIcon />
+                                            <span className="line-clamp-1">
+                                                {event.description.substring(0, 26)}
+                                            </span>
+                                        </p>
+                                    </CardContent>
+                                    <CardFooter className="flex justify-between">
+                                        <EditEvent event={event} />
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button className="hover:bg-red-700" variant="destructive"><Trash />Excluir</Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Esse evento será excluído permanentemente e não poderá ser desfeito.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => mutation.mutate(event.id!)}>Continuar</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </CardFooter>
+                                </Card>
+                            ))}
+                        </div>
+                    </CardContent>
                 </Card>
             </div>
         </div>

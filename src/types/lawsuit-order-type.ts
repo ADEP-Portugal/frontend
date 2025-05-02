@@ -28,3 +28,9 @@ export function getLawsuitOrderTypeByValue(value: string): LawsuitOrderType | un
     return value as LawsuitOrderType;
   }
 }
+
+export function getLawsuitOrderTypeEnum(value: string): LawsuitOrderType | undefined {
+  return (Object.entries(LawsuitOrderType).find(
+    ([_, v]) => v === value
+  )?.[0] as keyof typeof LawsuitOrderType) as LawsuitOrderType | undefined;
+}

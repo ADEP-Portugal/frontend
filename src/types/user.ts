@@ -6,4 +6,6 @@ export interface User {
   fullName: string;
 
   imageUrl?: string | null;
+
+  passwordHash?: string;
 }

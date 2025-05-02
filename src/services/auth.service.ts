@@ -45,4 +45,15 @@ export class AuthService extends ApiService<User> {
     );
     return response.data;
   }
+
+  async logout(): Promise<LoginResponse> {
+    const response = await this.api.post<LoginResponse>(
+      `${this.endpoint}/logout`,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  }
 }

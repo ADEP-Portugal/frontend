@@ -16,7 +16,9 @@ import Appointment from './pages/Appointment';
 import Lawsuit from './pages/Lawsuit';
 import Tasks from './pages/Tasks';
 import { ThemeProvider } from './components/theme-provider';
-import Employee from './pages/Employee';
+import AssociatePage from './pages/Associate';
+import UsefulLink from './pages/UsefulLink';
+import ReportPage from './pages/Report';
 
 const queryClient = new QueryClient();
 
@@ -32,7 +34,7 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/agenda" element={<Agenda />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
+              {/* <Route path="/signup" element={<Signup />} /> */}
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/email-send" element={<EmailSend />} />
@@ -40,12 +42,13 @@ function App() {
               <Route path="/appointment" element={<Appointment />} />
               <Route path="/lawsuit" element={<Lawsuit />} />
               <Route path="/tasks" element={<Tasks />} />
-              <Route path="/employee" element={<Employee />} />
+              <Route path="/associate" element={<AssociatePage />} />
+              <Route path="/useful-links" element={<UsefulLink />} />
+              <Route path="/report" element={<ReportPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
         </ThemeProvider>
-
       </AuthProvider>
     </QueryClientProvider>
   )

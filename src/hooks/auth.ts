@@ -53,3 +53,14 @@ export function useResetPassword(onSuccess: () => void) {
     onSuccess
   });
 }
+
+export function useLogout(onSuccess: () => void) {
+  return useMutation({
+    mutationFn: () => authService.logout(),
+    mutationKey: ["logout"],
+    onError: (error) => {
+      console.error("Erro ao sair da conta:", error);
+    },
+    onSuccess
+  });
+}

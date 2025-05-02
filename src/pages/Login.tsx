@@ -41,7 +41,6 @@ const Login = () => {
     async function onSubmit(values: z.infer<typeof FormSchema>) {
         setLoading(true);
         await mutateAsync({ email: values.email, password: values.password });
-        toast.success('Login realizado com sucesso!');
     };
 
     useEffect(() => {
@@ -129,14 +128,14 @@ const Login = () => {
                             </Form>
                         </CardContent>
 
-                        <CardFooter className="flex flex-col space-y-4">
+                        {/* <CardFooter className="flex flex-col space-y-4">
                             <div className="text-center text-sm text-muted-foreground">
                                 Não possui uma conta?{" "}
                                 <Link to="/signup" className="text-primary font-medium hover:underline">
                                     Cadastrar
                                 </Link>
                             </div>
-                        </CardFooter>
+                        </CardFooter> */}
                     </Card>
                 </div>
             </div>

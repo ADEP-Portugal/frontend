@@ -2,7 +2,7 @@ import axios from 'axios';
 import { AuthService } from '../services/auth.service';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+    baseURL: 'https://2004-2804-a44-60de-c100-8823-7a68-2bf1-79c7.ngrok-free.app',
     headers: {
         'Content-Type': 'application/json',
     },

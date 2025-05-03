@@ -12,7 +12,6 @@ import { Button } from "../components/ui/button";
 import PasswordStrengthBar from "react-password-strength-bar";
 import { Box } from "../components/ui/box";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
-import { AuthService } from "../services/auth.service";
 import { Switch } from "../components/ui/switch";
 import { Label } from "../components/ui/label";
 import { User } from "../types/user";
@@ -63,7 +62,6 @@ const Profile = () => {
             passwordHash: data.password,
         };
         mutation.mutate(userData);
-        await new AuthService().getUserWithToken();
     }
 
     const handleBirthdayNotification = (checked: boolean) => {

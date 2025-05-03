@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '../components/ui/input';
-import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';
+import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Spinner } from '../components/ui/spinner';

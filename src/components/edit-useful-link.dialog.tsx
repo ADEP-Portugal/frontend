@@ -1,6 +1,6 @@
 "use client"
 
-import { CirclePlus, PenIcon } from "lucide-react";
+import { PenIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";

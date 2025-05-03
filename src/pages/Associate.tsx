@@ -1,6 +1,6 @@
 "use client"
 
-import { BriefcaseBusinessIcon, DownloadIcon, GraduationCapIcon, IdCardIcon, InfoIcon, Loader2Icon, Pen, StickyNoteIcon, Trash, UserIcon } from "lucide-react";
+import { BriefcaseBusinessIcon, DownloadIcon, GraduationCapIcon, IdCardIcon, InfoIcon, Loader2Icon, StickyNoteIcon, Trash, UserIcon } from "lucide-react";
 import { Header } from "../components/header";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";

@@ -142,10 +142,10 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
             birthday: data.birthday,
             phone: data.phone,
             email: data.email,
-            documentType: data.documentType == "" ? null : data.documentType,
-            document: data.document == "" ? null : data.document,
-            emissionDate: data.emissionDate == "" ? null : data.emissionDate,
-            expirationDate: data.expirationDate == "" ? null : data.expirationDate,
+            documentType: data.documentType == "" ? undefined : data.documentType!,
+            document: data.document == "" ? undefined : data.document!,
+            documentEmissionDate: data.emissionDate == "" ? undefined : data.emissionDate!,
+            documentExpirationDate: data.expirationDate == "" ? undefined : data.expirationDate!,
             orderDate: data.orderDate,
             deadline: data.deadline,
             description: data.observation,
@@ -285,7 +285,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                             clientType === "ASSOCIATE" && <FormField
                                 control={form.control}
                                 name="client"
-                                render={({ field }) => (
+                                render={() => (
                                     <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Sócio</span>
@@ -359,7 +359,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                             <FormField
                                 control={form.control}
                                 name="responsible"
-                                render={({ field }) => (
+                                render={() => (
                                     <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Funcionário Responsável</span>
@@ -392,7 +392,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                                                         onSelect={(currentValue) => {
                                                                             setResponsible(currentValue);
                                                                             setComboboxResponsibleOpen(false);
-                                                                            form.setValue("responsible", user.id);
+                                                                            form.setValue("responsible", user.id!);
                                                                         }}
                                                                     >
                                                                         <CheckIcon
@@ -444,7 +444,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                         <FormField
                             control={form.control}
                             name="type"
-                            render={({ field }) => (
+                            render={() => (
                                 <FormItem>
                                     <FormLabel>
                                         <span>Tipo de Pedido</span>
@@ -453,7 +453,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                         <FormField
                                             control={form.control}
                                             name="status"
-                                            render={({ field }) => (
+                                            render={() => (
                                                 <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
                                                     <PopoverTrigger asChild>
                                                         <Button
@@ -479,7 +479,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                                                             key={lawsuitOrderType[1]}
                                                                             value={lawsuitOrderType[1]}
                                                                             onSelect={(currentValue) => {
-                                                                                setOrderType(getLawsuitOrderTypeByValue(currentValue));
+                                                                                setOrderType(getLawsuitOrderTypeByValue(currentValue) ?? orderType);
                                                                                 setComboboxOpen(false);
                                                                                 form.setValue("type", currentValue);
                                                                             }}
@@ -516,7 +516,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                                 <span>Nome do interessado</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Input {...field} />
+                                                <Input {...field} value={field.value ?? ""} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -550,7 +550,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                                             mode="single"
                                                             selected={birthday}
                                                             onSelect={(date) => {
-                                                                setBirthday(date);
+                                                                setBirthday(date!);
                                                                 field.onChange(format(date!, "yyyy-MM-dd"));
                                                             }}
                                                             initialFocus
@@ -576,7 +576,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                                 <span>Telemóvel</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Input {...field} />
+                                                <Input {...field} value={field.value ?? ""} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -591,7 +591,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                                 <span>Email</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Input {...field} />
+                                                <Input {...field} value={field.value ?? ""} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -609,7 +609,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                             <span>Tipo de Documento</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Select onValueChange={(value: string) => form.setValue("documentType", value)} {...field}>
+                                            <Select onValueChange={(value: string) => form.setValue("documentType", value)} value={field.value as string | undefined}>
                                                 <SelectTrigger className="w-[210px]">
                                                     <SelectValue placeholder="Selecione tipo de documento" />
                                                 </SelectTrigger>
@@ -635,7 +635,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                             <span>Número do Documento</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Input {...field} />
+                                            <Input {...field} value={field.value ?? ""} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -755,7 +755,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                                         mode="single"
                                                         selected={orderDate}
                                                         onSelect={(date) => {
-                                                            setOrderDate(date);
+                                                            setOrderDate(date!);
                                                             field.onChange(format(date!, "yyyy-MM-dd"));
                                                         }}
                                                         initialFocus
@@ -795,7 +795,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                                         mode="single"
                                                         selected={deadline}
                                                         onSelect={(date) => {
-                                                            setDeadline(date);
+                                                            setDeadline(date!);
                                                             field.onChange(format(date!, "yyyy-MM-dd"));
                                                         }}
                                                         initialFocus

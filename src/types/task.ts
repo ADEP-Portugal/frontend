@@ -18,9 +18,9 @@ export interface Task {
 
   lawsuitId: string | undefined;
 
-  status: string;
+  status?: string;
 
-  lawsuitClient: string | undefined;
+  lawsuitClient?: string | undefined;
 
-  lawsuitOrderType: string | undefined;
+  lawsuitOrderType?: string | undefined;
 }

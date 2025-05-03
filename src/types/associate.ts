@@ -1,7 +1,7 @@
 import { DocumentType } from "./document-type";
 
 export interface Associate {
-  id: string;
+  id?: string;
 
   email: string;
 
@@ -19,7 +19,7 @@ export interface Associate {
 
   documentExpirationDate: string | undefined;
 
-  documentEmissionDate: string | undefined;
+  documentEmissionDate?: string | undefined;
 
   nationality: string;
 

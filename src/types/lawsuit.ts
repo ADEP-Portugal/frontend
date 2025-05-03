@@ -10,17 +10,17 @@ export interface Lawsuit {
 
   email: string;
 
-  document?: string;
+  document?: string | undefined;
 
-  documentEmissionDate?: string;
+  documentEmissionDate?: string | undefined;
 
-  documentExpirationDate?: string;
+  documentExpirationDate?: string | undefined;
 
   orderDate: string;
 
   deadline: string;
 
-  documentType?: string;
+  documentType?: string | undefined;
 
   status: string;
 

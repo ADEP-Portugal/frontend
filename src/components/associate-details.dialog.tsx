@@ -98,7 +98,7 @@ const AssociateDetails = ({ associate }: { associate: Associate }) => {
                             </CardHeader>
                             <CardContent>
                                 <div><b>Número de Sócio:</b> {associate.associateNumber ?? "Não informado"}</div>
-                                <div><b>Validade do Cartão:</b> {formatDateToPtBr(new Date(associate.cardExpirationDate))}</div>
+                                <div><b>Validade do Cartão:</b> {formatDateToPtBr(new Date(associate.cardExpirationDate!))}</div>
                                 <div><b>Status da Cota:</b> {associate.quotaStatus == "PAID" ? "Paga" : "Pendente"}</div>
                             </CardContent>
                         </Card>
@@ -110,9 +110,9 @@ const AssociateDetails = ({ associate }: { associate: Associate }) => {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div><b>Tipo de Documento:</b> {DocumentType[associate.documentType as keyof typeof DocumentType] ?? "Não informado"}</div>
+                                <div><b>Tipo de Documento:</b> {DocumentType[associate.documentType as unknown as keyof typeof DocumentType] ?? "Não informado"}</div>
                                 <div><b>Número do Documento:</b> {associate.document ?? "Não informado"}</div>
-                                <div><b>Data de Validade:</b> {formatDateToPtBr(new Date(associate.documentExpirationDate))}</div>
+                                <div><b>Data de Validade:</b> {formatDateToPtBr(new Date(associate.documentExpirationDate!))}</div>
                             </CardContent>
                         </Card>
                     </div>

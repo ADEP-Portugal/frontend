@@ -264,7 +264,7 @@ const NewLawsuit = () => {
                             clientType === "ASSOCIATE" && <FormField
                                 control={form.control}
                                 name="client"
-                                render={({ field }) => (
+                                render={() => (
                                     <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Sócio</span>
@@ -338,7 +338,7 @@ const NewLawsuit = () => {
                             <FormField
                                 control={form.control}
                                 name="responsible"
-                                render={({ field }) => (
+                                render={() => (
                                     <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Funcionário Responsável</span>
@@ -371,7 +371,7 @@ const NewLawsuit = () => {
                                                                         onSelect={(currentValue) => {
                                                                             setResponsible(currentValue);
                                                                             setComboboxResponsibleOpen(false);
-                                                                            form.setValue("responsible", user.id);
+                                                                            form.setValue("responsible", user.id!);
                                                                         }}
                                                                     >
                                                                         <CheckIcon
@@ -423,7 +423,7 @@ const NewLawsuit = () => {
                         <FormField
                             control={form.control}
                             name="type"
-                            render={({ field }) => (
+                            render={() => (
                                 <FormItem>
                                     <FormLabel>
                                         <span>Tipo de Pedido</span>
@@ -432,7 +432,7 @@ const NewLawsuit = () => {
                                         <FormField
                                             control={form.control}
                                             name="status"
-                                            render={({ field }) => (
+                                            render={() => (
                                                 <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
                                                     <PopoverTrigger asChild>
                                                         <Button

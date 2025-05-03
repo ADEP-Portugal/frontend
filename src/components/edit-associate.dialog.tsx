@@ -251,7 +251,7 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                                             mode="single"
                                                             selected={birthday}
                                                             onSelect={(date) => {
-                                                                setBirthday(date);
+                                                                setBirthday(date!);
                                                                 field.onChange(format(date!, "yyyy-MM-dd"));
                                                             }}
                                                             initialFocus
@@ -335,7 +335,7 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                 <FormField
                                     control={form.control}
                                     name="availabilityToWork"
-                                    render={({ field }) => (
+                                    render={() => (
                                         <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Disponibilidade para Trabalhar</span>
@@ -409,7 +409,7 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                             <FormField
                                 control={form.control}
                                 name="areaInterest"
-                                render={({ field }) => (
+                                render={() => (
                                     <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Área de Interesse</span>
@@ -584,7 +584,7 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                                             mode="single"
                                                             selected={validityDocumentDate}
                                                             onSelect={(date) => {
-                                                                setValidityDocumentDate(date);
+                                                                setValidityDocumentDate(date!);
                                                                 field.onChange(format(date!, "yyyy-MM-dd"));
                                                             }}
                                                             initialFocus

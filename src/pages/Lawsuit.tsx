@@ -1,6 +1,6 @@
 "use client"
 
-import { BriefcaseBusinessIcon, CalendarIcon, DollarSignIcon, FileIcon, Loader2Icon, Pen, PhoneIcon, StickyNoteIcon, Trash, UserIcon } from "lucide-react";
+import { BriefcaseBusinessIcon, CalendarIcon, DollarSignIcon, FileIcon, Loader2Icon, PhoneIcon, StickyNoteIcon, Trash, UserIcon } from "lucide-react";
 import { Header } from "../components/header";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
@@ -49,7 +49,7 @@ const Lawsuit = () => {
                         <div className="flex justify-between">
                             <NewLawsuit />
                             <div className="flex gap-6 w-8/12">
-                                <Input placeholder="Buscar processos..." />
+                                <Input onChange={(e) => setSearch(e.target.value)} placeholder="Buscar processos..." />
                                 <Select>
                                     <SelectTrigger className="w-[255px]">
                                         <SelectValue placeholder="Selecione o período" />

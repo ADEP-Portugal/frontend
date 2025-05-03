@@ -9,7 +9,6 @@ import Agenda from './pages/Agenda';
 import ForgotPassword from './pages/ForgotPassword';
 import EmailSend from './pages/EmailSend';
 import { AuthProvider } from './context/authContext';
-import Signup from './pages/Signup';
 import ResetPassword from './pages/ResetPassword';
 import Profile from './pages/Profile';
 import Appointment from './pages/Appointment';

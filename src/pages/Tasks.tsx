@@ -1,6 +1,6 @@
 "use client"
 
-import { BriefcaseIcon, CalendarIcon, FileTextIcon, FlagIcon, Loader2Icon, Pen, PhoneIcon, StickyNoteIcon, Trash, UserIcon } from "lucide-react";
+import { BriefcaseIcon, CalendarIcon, FileTextIcon, FlagIcon, Loader2Icon, PhoneIcon, StickyNoteIcon, Trash, UserIcon } from "lucide-react";
 import { Header } from "../components/header";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
@@ -16,7 +16,6 @@ import { toast } from "sonner";
 import { formatDateToPtBr } from "../util/date.util";
 import { TaskStatus } from "../types/task-status";
 import { LawsuitOrderType } from "../types/lawsuit-order-type";
-import React from "react";
 import EditTask from "../components/edit-task.dialog";
 
 const Tasks = () => {
@@ -49,7 +48,7 @@ const Tasks = () => {
                     <div className="flex justify-between">
                         <NewTask />
                         <div className="flex gap-6 w-8/12">
-                            <Input placeholder="Buscar tarefas..." />
+                            <Input onChange={(e) => setSearch(e.target.value)} placeholder="Buscar tarefas..." />
                             <Select>
                                 <SelectTrigger className="w-[310px]">
                                     <SelectValue placeholder="Selecione o status" />

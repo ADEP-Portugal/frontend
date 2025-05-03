@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarIcon, CheckIcon, ChevronsUpDownIcon, CirclePlus, PenIcon } from "lucide-react";
+import { CalendarIcon, CheckIcon, ChevronsUpDownIcon, PenIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -149,7 +149,7 @@ const EditTask = ({ task }: { task: Task }) => {
                         <FormField
                             control={form.control}
                             name="responsible"
-                            render={({ field }) => (
+                            render={() => (
                                 <FormItem>
                                     <FormLabel>
                                         <span>Funcionário Responsável</span>
@@ -182,7 +182,7 @@ const EditTask = ({ task }: { task: Task }) => {
                                                                     onSelect={(currentValue) => {
                                                                         setResponsible(currentValue);
                                                                         setComboboxOpen(false);
-                                                                        form.setValue("responsible", user.id);
+                                                                        form.setValue("responsible", user.id!);
                                                                     }}
                                                                 >
                                                                     <CheckIcon
@@ -207,7 +207,7 @@ const EditTask = ({ task }: { task: Task }) => {
                         <FormField
                             control={form.control}
                             name="lawsuit"
-                            render={({ field }) => (
+                            render={() => (
                                 <FormItem>
                                     <FormLabel>
                                         <span>Processo Relacionado</span>
@@ -323,7 +323,7 @@ const EditTask = ({ task }: { task: Task }) => {
                                                         mode="single"
                                                         selected={deadline}
                                                         onSelect={(date) => {
-                                                            setDeadline(date);
+                                                            setDeadline(date!);
                                                             field.onChange(format(date!, "yyyy-MM-dd"));
                                                         }}
                                                         initialFocus

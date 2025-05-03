@@ -140,7 +140,7 @@ const NewTask = () => {
                         <FormField
                             control={form.control}
                             name="responsible"
-                            render={({ field }) => (
+                            render={() => (
                                 <FormItem>
                                     <FormLabel>
                                         <span>Funcionário Responsável</span>
@@ -198,7 +198,7 @@ const NewTask = () => {
                         <FormField
                             control={form.control}
                             name="lawsuit"
-                            render={({ field }) => (
+                            render={() => (
                                 <FormItem>
                                     <FormLabel>
                                         <span>Processo Relacionado</span>

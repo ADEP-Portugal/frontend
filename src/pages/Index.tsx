@@ -1,5 +1,5 @@
 import { Button } from "../components/ui/button";
-import { CakeIcon, ChartBar, EyeIcon, EyeOffIcon, FileText, LinkIcon, ListTodo, Loader2Icon, TriangleAlertIcon, Users, UsersIcon } from "lucide-react";
+import { CakeIcon, ChartBar, EyeOffIcon, FileText, LinkIcon, ListTodo, Loader2Icon, TriangleAlertIcon, Users, UsersIcon } from "lucide-react";
 import { Card } from "../components/ui/card";
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
@@ -16,6 +16,7 @@ import { Associate } from "../types/associate";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { EducationLevel } from "../types/education-level";
 import AssociateFullDetails from "../components/associate-full-details.dialog";
+import { DocumentType } from "../types/document-type";
 
 const Index = () => {
   const events: { title: string, start: Date }[] = [];
@@ -309,7 +310,7 @@ const Index = () => {
                     <b>Data de Validade:</b> {item.documentExpirationDate != null ? formatDateToPtBr(new Date(item.documentExpirationDate)) : "N/A"}
                   </span>
                   <span>
-                    <b>Tipo de documento:</b> {DocumentType[item.documentType as keyof typeof DocumentType] ?? "N/A"}
+                    <b>Tipo de documento:</b> {item.documentType ? DocumentType[item.documentType as unknown as keyof typeof DocumentType] : "N/A"}
                   </span>
                 </div>
               </div>
@@ -325,7 +326,7 @@ const Index = () => {
             initialView='dayGridMonth'
             events={events}
             eventContent={renderEventContent}
-            eventClick={(event) => {
+            eventClick={() => {
               navigate("/agenda");
             }}
           />

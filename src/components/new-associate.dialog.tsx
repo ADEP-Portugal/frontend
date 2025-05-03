@@ -322,7 +322,7 @@ const NewAssociate = () => {
                                 <FormField
                                     control={form.control}
                                     name="availabilityToWork"
-                                    render={({ field }) => (
+                                    render={() => (
                                         <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Disponibilidade para Trabalhar</span>
@@ -396,7 +396,7 @@ const NewAssociate = () => {
                             <FormField
                                 control={form.control}
                                 name="areaInterest"
-                                render={({ field }) => (
+                                render={() => (
                                     <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Área de Interesse</span>

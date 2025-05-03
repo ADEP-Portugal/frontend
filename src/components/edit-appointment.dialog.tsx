@@ -183,7 +183,7 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
                             {clientType === 'associate' ? <FormField
                                 control={form.control}
                                 name="client"
-                                render={({ field }) => (
+                                render={() => (
                                     <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Sócio</span>
@@ -387,7 +387,7 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
                             <FormField
                                 control={form.control}
                                 name="responsible"
-                                render={({ field }) => (
+                                render={() => (
                                     <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Funcionário Responsável</span>
@@ -420,7 +420,7 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
                                                                         onSelect={(currentValue) => {
                                                                             setValue(currentValue === value ? "" : currentValue);
                                                                             setComboboxOpen(false);
-                                                                            form.setValue("responsible", user.id);
+                                                                            form.setValue("responsible", user.id!);
                                                                         }}
                                                                     >
                                                                         <CheckIcon

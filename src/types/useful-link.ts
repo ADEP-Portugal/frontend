@@ -7,5 +7,5 @@ export interface UsefulLink {
 
   category: string;
 
-  description: string;
+  description?: string;
 }

@@ -181,7 +181,7 @@ const NewAppointment = () => {
                             {clientType === 'associate' ? <FormField
                                 control={form.control}
                                 name="client"
-                                render={({ field }) => (
+                                render={() => (
                                     <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Sócio</span>
@@ -388,7 +388,7 @@ const NewAppointment = () => {
                             <FormField
                                 control={form.control}
                                 name="responsible"
-                                render={({ field }) => (
+                                render={() => (
                                     <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Funcionário Responsável</span>
@@ -421,7 +421,7 @@ const NewAppointment = () => {
                                                                         onSelect={(currentValue) => {
                                                                             setResponsible(currentValue === responsible ? "" : currentValue);
                                                                             setComboboxResponsibleOpen(false);
-                                                                            form.setValue("responsible", user.id);
+                                                                            form.setValue("responsible", user.id!);
                                                                         }}
                                                                     >
                                                                         <CheckIcon

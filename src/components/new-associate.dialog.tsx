@@ -20,7 +20,6 @@ import { EducationLevel } from "../types/education-level";
 import { Textarea } from "./ui/textarea";
 import { Checkbox } from "./ui/checkbox";
 import { AreaInterest } from "../types/area-interest";
-import { Nationality } from "../types/nationality";
 import { JobStatus } from "../types/job-status";
 import { ScrollArea } from "./ui/scroll-area";
 import { pt } from "date-fns/locale";
@@ -31,6 +30,8 @@ import { toast } from "sonner";
 import { Spinner } from "./ui/spinner";
 import { formatFullDatePtBr } from "../util/date.util";
 import { DocumentType } from "../types/document-type";
+import { maskitoDateOptionsGenerator } from "@maskito/kit";
+import { useMaskito } from "@maskito/react";
 
 const FormSchema = z.object({
     name: z.string({ required_error: "Campo obrigatório", }),
@@ -56,7 +57,6 @@ const FormSchema = z.object({
 })
 
 const NewAssociate = () => {
-    const [birthday, setBirthday] = React.useState<Date>();
     const [validityCardDate, setValidityCardDate] = React.useState<Date>();
     const [validityDocumentDate, setValidityDocumentDate] = React.useState<Date>();
     const [availabilityToWork, setAvailabilityToWork] = React.useState<string[]>([]);
@@ -64,6 +64,12 @@ const NewAssociate = () => {
     const [loading, setLoading] = React.useState(false);
     const [open, setOpen] = React.useState<boolean>(false);
     const queryClient = useQueryClient();
+    const birthdayRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
@@ -214,37 +220,16 @@ const NewAssociate = () => {
                                     control={form.control}
                                     name="birthday"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Data de Nascimento*</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                                "w-[240px] justify-start text-left font-normal",
-                                                                !birthday && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {birthday ? formatFullDatePtBr(birthday) : <span>Selecione uma data</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            locale={pt}
-                                                            mode="single"
-                                                            selected={birthday}
-                                                            onSelect={(date) => {
-                                                                setBirthday(date);
-                                                                field.onChange(format(date!, "yyyy-MM-dd"));
-                                                            }}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
+                                                <Input {...field}
+                                                    ref={birthdayRef}
+                                                    onInput={(e) => {
+                                                        form.setValue("birthday", e.currentTarget.value);
+                                                    }} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -259,18 +244,7 @@ const NewAssociate = () => {
                                                 <span>Nacionalidade*</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Select onValueChange={(value: string) => form.setValue("nationality", value)} {...field}>
-                                                    <SelectTrigger className="w-[240px]">
-                                                        <SelectValue placeholder="Selecione a nacionalidade" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {Object.entries(Nationality).map(([key, value]) => (
-                                                            <SelectItem key={key} value={key}>
-                                                                {value}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
+                                                <Input {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

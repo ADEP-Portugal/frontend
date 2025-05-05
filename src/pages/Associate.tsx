@@ -116,7 +116,7 @@ const AssociatePage = () => {
         doc.text(associate.phone, 80, 91);
         doc.text(formatDateToPtBr(new Date(associate.birthday)), 80, 99);
         doc.text(getLabelGender(associate.gender as Gender), 80, 107);
-        doc.text(Nationality[associate.nationality as keyof typeof Nationality], 80, 115);
+        doc.text(associate.nationality, 80, 115);
         doc.text(associate.address, 80, 123);
         doc.text(associate.nif ?? "Não informado", 80, 131);
 

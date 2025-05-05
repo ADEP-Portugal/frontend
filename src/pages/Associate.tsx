@@ -21,6 +21,7 @@ import { Associate } from "../types/associate";
 import EditAssociate from "../components/edit-associate.dialog";
 import { toast } from "sonner";
 import { AreaInterest } from "../types/area-interest";
+import { DocumentType } from "../types/document-type";
 
 const AssociatePage = () => {
     const queryClient = useQueryClient();
@@ -122,12 +123,12 @@ const AssociatePage = () => {
 
         //Profissional Information Values
         doc.text(EducationLevel[associate.educationLevel as keyof typeof EducationLevel], 80, 155);
-        doc.text(associate.employmentStatus ?? "Não informado", 80, 163);
+        doc.text(JobStatus[associate.employmentStatus as keyof typeof JobStatus] ?? "Não informado", 80, 163);
         doc.text(associate.availabilityToWork.length == 0 ? "Não informado" : associate.availabilityToWork.map((item) => item == "MORNING" ? "Manhã" : item == "AFTERNOON" ? "Tarde" : "Noite").join(', '), 80, 171);
-        doc.text(associate.areaInterest.length == 0 ? "Não informado" : associate.areaInterest.join(", "), 80, 179);
+        doc.text(associate.areaInterest.length == 0 ? "Não informado" : associate.areaInterest.map((item) => AreaInterest[item as keyof typeof AreaInterest]).join(", "), 80, 179);
 
         //Identification Document Values
-        doc.text(associate.documentType ?? "Não informado", 80, 203);
+        doc.text(DocumentType[associate.documentType as unknown as keyof typeof DocumentType] ?? "Não informado", 80, 203);
         doc.text(associate.document ?? "Não informado", 80, 211);
         doc.text(formatDateToPtBr(new Date(associate.documentExpirationDate!)) ?? "Não informado", 80, 219);
 
@@ -196,7 +197,7 @@ const AssociatePage = () => {
                                                 {associate.quotaStatus == "PAID" ? "Paga" : "Pendente"}
                                             </span>
                                             <span className="text-sm text-white flex p-1.5 gap-1 bg-secondary rounded items-center">
-                                                <IdCardIcon /> Sem Nº Sócio
+                                                <IdCardIcon /> {associate.associateNumber ?? "Sem Nº Sócio"}
                                             </span>
                                         </div>
                                     </CardTitle>

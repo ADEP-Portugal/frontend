@@ -28,7 +28,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Associate } from "../types/associate";
 import { toast } from "sonner";
 import { Spinner } from "./ui/spinner";
-import { formatFullDatePtBr } from "../util/date.util";
+import { formatDateToISO, formatFullDatePtBr } from "../util/date.util";
 import { DocumentType } from "../types/document-type";
 import { maskitoDateOptionsGenerator } from "@maskito/kit";
 import { useMaskito } from "@maskito/react";
@@ -102,7 +102,7 @@ const NewAssociate = () => {
             email: data.email,
             gender: data.gender,
             phone: data.phone,
-            birthday: data.birthday,
+            birthday: formatDateToISO(data.birthday),
             nationality: data.nationality,
             educationLevel: data.education,
             address: data.address,
@@ -239,7 +239,7 @@ const NewAssociate = () => {
                                     control={form.control}
                                     name="nationality"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Nacionalidade*</span>
                                             </FormLabel>

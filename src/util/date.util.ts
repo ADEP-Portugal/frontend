@@ -83,3 +83,8 @@ export function getDateDifference(date: Date): number {
 
   return Math.abs(diffDays);
 }
+
+export function formatDateToISO(input: string): string {
+  const [day, month, year] = input.split('/');
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+}

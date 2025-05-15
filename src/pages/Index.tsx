@@ -1,5 +1,5 @@
 import { Button } from "../components/ui/button";
-import { CakeIcon, ChartBar, EyeOffIcon, FileText, ListTodo, Loader2Icon, TriangleAlertIcon, Users, UsersIcon } from "lucide-react";
+import { CakeIcon, ChartBar, EyeOffIcon, FileText, LinkIcon, ListTodo, Loader2Icon, TriangleAlertIcon, Users, UsersIcon } from "lucide-react";
 import { Card } from "../components/ui/card";
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
@@ -56,6 +56,11 @@ const Index = () => {
       title: "Área Associados",
       url: "/associate",
       icon: Users,
+    },
+    {
+      title: "Links Úteis",
+      url: "/useful-links",
+      icon: LinkIcon,
     }
   ];
   const associateService = new AssociateService();

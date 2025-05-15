@@ -31,3 +31,5 @@ jobs:
         password: ${{ secrets.DEPLOY_PASS }}
         port: 22022
         target: "/home/adminassociacaoa/public_html"
+        source: "dist/*"
+        strip_components: 1

@@ -57,11 +57,6 @@ const Index = () => {
       url: "/associate",
       icon: Users,
     },
-    {
-      title: "Links Úteis",
-      url: "/useful-links",
-      icon: LinkIcon,
-    }
   ];
   const associateService = new AssociateService();
   const eventService = new EventService();

@@ -2,7 +2,7 @@ import axios from 'axios';
 // import { AuthService } from '../services/auth.service';
 
 const api = axios.create({
-    baseURL: 'https://pheasant-massive-regularly.ngrok-free.app',
+    baseURL: 'http://162.240.144.174',
     headers: {
         'Content-Type': 'application/json',
         "ngrok-skip-browser-warning": "true",

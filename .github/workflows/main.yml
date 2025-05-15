@@ -33,4 +33,3 @@ jobs:
         target: "/home/adminassociacaoa/public_html"
         source: "dist/*"
         strip_components: 1
-        script: rm -rf /home/adminassociacaoa/public_html/assets/*

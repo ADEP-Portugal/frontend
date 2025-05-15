@@ -33,3 +33,20 @@ jobs:
         target: "/home/adminassociacaoa/public_html"
         source: "dist/*"
         strip_components: 1
+    - name: Recompilar e reiniciar Apache via SSH
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: 162.240.159.68
+        username: root
+        password: ${{ secrets.DEPLOY_PASS }}
+        port: 22022
+        script: |
+          echo "Recompilando configs do Apache..."
+          /scripts/rebuildhttpdconf
+    
+          echo "Reiniciando Apache com WHM..."
+          /scripts/restartsrv_httpd
+    
+          echo "Forçando restart via systemctl..."
+          sudo systemctl restart httpd
+

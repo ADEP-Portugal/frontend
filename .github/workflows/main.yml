@@ -24,7 +24,7 @@ jobs:
       run: npm run build
 
     - name: Deploy via SCP (SFTP)
-      uses: appleboy/scp-action@v0.1.4
+      uses: appleboy/ssh-action@v0.1.4
       with:
         host: 162.240.159.68
         username: root

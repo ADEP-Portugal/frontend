@@ -1,0 +1,34 @@
+name: Deploy Frontend to HostGator
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v3
+
+    - name: Instalar Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Instalar dependências
+      run: npm install
+
+    - name: Build do frontend
+      run: npm run build
+
+    - name: Deploy via SCP (SFTP)
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: 162.240.159.68
+        username: root
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        port: 22022
+        source: "dist/*"
+        target: "/home/adminassociacaoa/public_html"

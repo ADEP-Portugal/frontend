@@ -5,7 +5,6 @@ const api = axios.create({
     baseURL: 'http://162.240.144.174',
     headers: {
         'Content-Type': 'application/json',
-        "ngrok-skip-browser-warning": "true",
     },
 });
 

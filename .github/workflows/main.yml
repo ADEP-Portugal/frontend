@@ -33,3 +33,12 @@ jobs:
         target: "/home/adminassociacaoa/public_html"
         source: "dist/*"
         strip_components: 1
+        script: |
+          echo "Recompilando Apache config..."
+          /scripts/rebuildhttpdconf
+    
+          echo "Reiniciando Apache com WHM script..."
+          /scripts/restartsrv_httpd
+    
+          echo "Forçando restart manual do Apache (extra segurança)..."
+          sudo systemctl restart httpd

@@ -18,7 +18,7 @@ jobs:
         node-version: 18
 
     - name: Instalar dependências
-      run: npm install
+      run: npm install --force
 
     - name: Build do frontend
       run: npm run build

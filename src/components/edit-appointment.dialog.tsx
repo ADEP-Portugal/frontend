@@ -216,7 +216,7 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
                                                                         onSelect={(currentValue) => {
                                                                             setAssociate(currentValue);
                                                                             setComboboxAssociateOpen(false);
-                                                                            form.setValue("gender", associateList.find((associateItem) => associateItem.fullName === currentValue)!.gender);
+                                                                            form.setValue("gender", associateList.find((associateItem) => associateItem.fullName === currentValue)!.gender!);
                                                                             form.setValue("client", associateItem.fullName);
                                                                         }}
                                                                     >

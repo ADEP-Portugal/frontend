@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarIcon, CheckIcon, ChevronsUpDownIcon, CirclePlus } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, CirclePlus } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
@@ -10,16 +10,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod"
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
-import { Calendar } from "../components/ui/calendar";
 import { cn } from "../lib/utils";
 import React from "react";
-import { format } from "date-fns";
 import { Textarea } from "../components/ui/textarea";
 import { LawsuitStatus } from "../types/lawsuit-status";
 import { getLawsuitOrderTypeByValue, getLawsuitOrderTypeEnum, LawsuitOrderType } from "../types/lawsuit-order-type";
 import { DocumentType } from "../types/document-type";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command";
-import { pt } from "date-fns/locale";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AssociateService } from "../services/associate.service";
@@ -28,9 +25,11 @@ import { LawsuitService } from "../services/lawsuit.service";
 import { Lawsuit } from "../types/lawsuit";
 import { toast } from "sonner";
 import { Spinner } from "./ui/spinner";
-import { formatFullDatePtBr } from "../util/date.util";
+import { formatDateToISO } from "../util/date.util";
 import { LawsuitType } from "../types/lawsuit-type";
 import { FileService } from "../services/file.service";
+import { maskitoDateOptionsGenerator } from "@maskito/kit";
+import { useMaskito } from "@maskito/react";
 
 const FormSchema = z.object({
     responsible: z.string({ required_error: "Campo obrigatório", }),
@@ -49,17 +48,12 @@ const FormSchema = z.object({
     observation: z.string({ required_error: "Campo obrigatório", }),
     clientType: z.string({ required_error: "Campo obrigatório", }),
     paymentStatus: z.string({ required_error: "Campo obrigatório", }),
-    documentUpload: z.array(z.string())
+    documentUpload: z.array(z.string()).optional(),
 });
 
 const NewLawsuit = () => {
     const queryClient = useQueryClient();
-    const [birthday, setBirthday] = React.useState<Date>();
     const [open, setOpen] = React.useState<boolean>(false);
-    const [emissionDate, setEmissionDate] = React.useState<Date>();
-    const [expirationDate, setExpirationDate] = React.useState<Date>();
-    const [orderDate, setOrderDate] = React.useState<Date>();
-    const [deadline, setDeadline] = React.useState<Date>();
     const [comboboxResponsibleOpen, setComboboxResponsibleOpen] = React.useState(false)
     const [responsible, setResponsible] = React.useState("");
     const [clientType, setClientType] = React.useState("ASSOCIATE");
@@ -72,6 +66,36 @@ const NewLawsuit = () => {
     const associateService = new AssociateService();
     const fileService = new FileService();
     const lawsuitService = new LawsuitService();
+    const orderDateRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
+    const birthdayRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
+    const deadlineRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
+    const emissionDateRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
+    const expirationDateRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
@@ -95,11 +119,6 @@ const NewLawsuit = () => {
             queryClient.invalidateQueries({ queryKey: ['lawsuits'] });
             setResponsible("");
             setAssociate("");
-            setBirthday(undefined);
-            setEmissionDate(undefined);
-            setExpirationDate(undefined);
-            setOrderDate(undefined);
-            setDeadline(undefined);
             setLoading(false);
             form.reset();
             toast.success("Processo criado com sucesso!");
@@ -131,22 +150,22 @@ const NewLawsuit = () => {
         const data = form.getValues();
         const appointmentData: Lawsuit = {
             client: data.client,
-            birthday: data.birthday,
+            birthday: formatDateToISO(data.birthday),
             phone: data.phone,
             email: data.email,
             documentType: data.documentType,
             document: data.document,
-            documentEmissionDate: data.emissionDate,
-            documentExpirationDate: data.expirationDate,
-            orderDate: data.orderDate,
-            deadline: data.deadline,
+            documentEmissionDate: data.emissionDate ? formatDateToISO(data.emissionDate) : undefined,
+            documentExpirationDate: data.expirationDate ? formatDateToISO(data.expirationDate) : undefined,
+            orderDate: formatDateToISO(data.orderDate),
+            deadline: formatDateToISO(data.deadline),
             description: data.observation,
             status: data.status as LawsuitStatus,
             responsible: data.responsible,
             orderType: getLawsuitOrderTypeEnum(data.type) as LawsuitOrderType,
             paymentStatus: data.paymentStatus,
             type: data.clientType as LawsuitType,
-            fileNames: data.documentUpload
+            fileNames: data.documentUpload && data.documentUpload.length > 0 ? data.documentUpload : [],
         };
         const formData = new FormData();
         if (files) {
@@ -162,12 +181,6 @@ const NewLawsuit = () => {
         setClientType("associate");
         setResponsible("");
         setAssociate("");
-        setBirthday(undefined);
-        setEmissionDate(undefined);
-        setExpirationDate(undefined);
-        setOrderDate(undefined);
-        setDeadline(undefined);
-        setOrderType(undefined);
         form.reset();
     }
 
@@ -505,37 +518,16 @@ const NewLawsuit = () => {
                                     control={form.control}
                                     name="birthday"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Data de nascimento</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                                "w-[210px] justify-start text-left font-normal",
-                                                                !birthday && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {birthday ? formatFullDatePtBr(birthday) : <span>Selecione uma data</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            locale={pt}
-                                                            mode="single"
-                                                            selected={birthday}
-                                                            onSelect={(date) => {
-                                                                setBirthday(date);
-                                                                field.onChange(format(date!, "yyyy-MM-dd"));
-                                                            }}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
+                                                <Input {...field}
+                                                    ref={birthdayRef}
+                                                    onInput={(e) => {
+                                                        form.setValue("birthday", e.currentTarget.value);
+                                                    }} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -627,37 +619,16 @@ const NewLawsuit = () => {
                                     control={form.control}
                                     name="emissionDate"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Data de Emissão</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                                "w-[210px] justify-start text-left font-normal",
-                                                                !emissionDate && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {emissionDate ? formatFullDatePtBr(emissionDate) : <span>Selecione uma data</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            locale={pt}
-                                                            mode="single"
-                                                            selected={emissionDate}
-                                                            onSelect={(date) => {
-                                                                setEmissionDate(date);
-                                                                field.onChange(format(date!, "yyyy-MM-dd"));
-                                                            }}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
+                                                <Input {...field}
+                                                    ref={emissionDateRef}
+                                                    onInput={(e) => {
+                                                        form.setValue("emissionDate", e.currentTarget.value);
+                                                    }} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -667,37 +638,16 @@ const NewLawsuit = () => {
                                     control={form.control}
                                     name="expirationDate"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Data de Validade</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                                "w-[210px] justify-start text-left font-normal",
-                                                                !expirationDate && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {expirationDate ? formatFullDatePtBr(expirationDate) : <span>Selecione uma data</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            locale={pt}
-                                                            mode="single"
-                                                            selected={expirationDate}
-                                                            onSelect={(date) => {
-                                                                setExpirationDate(date);
-                                                                field.onChange(format(date!, "yyyy-MM-dd"));
-                                                            }}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
+                                                <Input {...field}
+                                                    ref={expirationDateRef}
+                                                    onInput={(e) => {
+                                                        form.setValue("expirationDate", e.currentTarget.value);
+                                                    }} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -710,37 +660,16 @@ const NewLawsuit = () => {
                                 control={form.control}
                                 name="orderDate"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Data de Entrada do Pedido</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[210px] justify-start text-left font-normal",
-                                                            !orderDate && "text-muted-foreground"
-                                                        )}
-                                                    >
-                                                        {orderDate ? formatFullDatePtBr(orderDate) : <span>Selecione uma data</span>}
-                                                        <CalendarIcon className="ml-auto h-4 w-4" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0">
-                                                    <Calendar
-                                                        locale={pt}
-                                                        mode="single"
-                                                        selected={orderDate}
-                                                        onSelect={(date) => {
-                                                            setOrderDate(date);
-                                                            field.onChange(format(date!, "yyyy-MM-dd"));
-                                                        }}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                            <Input {...field}
+                                                ref={orderDateRef}
+                                                onInput={(e) => {
+                                                    form.setValue("orderDate", e.currentTarget.value);
+                                                }} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -750,37 +679,16 @@ const NewLawsuit = () => {
                                 control={form.control}
                                 name="deadline"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Data de Entrega ao Cliente</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[210px] justify-start text-left font-normal",
-                                                            !deadline && "text-muted-foreground"
-                                                        )}
-                                                    >
-                                                        {deadline ? formatFullDatePtBr(deadline) : <span>Selecione uma data</span>}
-                                                        <CalendarIcon className="ml-auto h-4 w-4" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0">
-                                                    <Calendar
-                                                        locale={pt}
-                                                        mode="single"
-                                                        selected={deadline}
-                                                        onSelect={(date) => {
-                                                            setDeadline(date);
-                                                            field.onChange(format(date!, "yyyy-MM-dd"));
-                                                        }}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                            <Input {...field}
+                                                ref={deadlineRef}
+                                                onInput={(e) => {
+                                                    form.setValue("deadline", e.currentTarget.value);
+                                                }} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -790,6 +698,7 @@ const NewLawsuit = () => {
                         <FormField
                             control={form.control}
                             name="documentUpload"
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             render={({ field: { value, onChange, ...fieldProps } }) => (
                                 <FormItem>
                                     <FormLabel>

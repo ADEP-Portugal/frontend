@@ -27,7 +27,7 @@ const ReportPage = () => {
         { appointment: report!.appointmentCount },
         { task: report!.taskCount },
         { event: report!.eventCount },
-        { document: 0 },
+        { document: report!.documentCount },
         { associate: report!.associateCount },
         { lawsuit: report!.lawsuitCount },
     ] : [];
@@ -144,7 +144,7 @@ const ReportPage = () => {
                                         <h1 className="mt-4 text-xl font-bold">
                                             Documentos
                                         </h1>
-                                        Total: 0
+                                        Total: {report.documentCount}
                                     </div>
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
@@ -178,7 +178,7 @@ const ReportPage = () => {
                                         Eventos: {report.eventCount}
                                     </div>
                                     <div>
-                                        Documentos: 0
+                                        Documentos: {report.documentCount}
                                     </div>
                                     <div>
                                         Novos Associados: {report.associateCount}

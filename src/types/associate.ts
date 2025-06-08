@@ -9,7 +9,7 @@ export interface Associate {
 
   phone: string;
 
-  gender: string;
+  gender: string | undefined;
 
   birthday: string;
 
@@ -21,13 +21,13 @@ export interface Associate {
 
   documentEmissionDate?: string | undefined;
 
-  nationality: string;
+  nationality: string | undefined;
 
-  educationLevel: string;
+  educationLevel: string | undefined;
 
-  address: string;
+  address: string | undefined;
 
-  quotaStatus: string;
+  quotaStatus: string | undefined;
 
   nif: string | undefined;
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarIcon, CirclePlus, ClockIcon } from "lucide-react";
+import { CirclePlus, ClockIcon } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
@@ -8,11 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod"
-import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
-import { Calendar } from "../components/ui/calendar";
-import { cn } from "../lib/utils";
 import React from "react";
-import { format } from "date-fns";
 import { Box } from "../components/ui/box";
 import { Textarea } from "../components/ui/textarea";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -21,9 +17,8 @@ import { Event } from "../types/event";
 import { toast } from "sonner";
 import { Spinner } from "./ui/spinner";
 import { useMaskito } from '@maskito/react';
-import { maskitoTimeOptionsGenerator } from '@maskito/kit';
-import { formatFullDatePtBr } from "../util/date.util";
-import { pt } from 'date-fns/locale'
+import { maskitoDateOptionsGenerator, maskitoTimeOptionsGenerator } from '@maskito/kit';
+import { formatDateToISO } from "../util/date.util";
 
 const FormSchema = z.object({
     name: z.string({ required_error: "Campo obrigatório" }),
@@ -35,13 +30,18 @@ const FormSchema = z.object({
 
 const NewEvent = () => {
     const queryClient = useQueryClient();
-    const [date, setDate] = React.useState<Date>();
     const [open, setOpen] = React.useState<boolean>(false);
     const eventService = new EventService();
     const [loading, setLoading] = React.useState(false);
     const timeRef = useMaskito({
         options: maskitoTimeOptionsGenerator({
             mode: 'HH:MM',
+        })
+    });
+    const dateRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
         })
     });
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -51,7 +51,6 @@ const NewEvent = () => {
         mutationFn: (createRequest: Event) => eventService.create(createRequest),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['events'] });
-            setDate(undefined);
             setLoading(false);
             setOpen(false);
             form.reset();
@@ -69,7 +68,7 @@ const NewEvent = () => {
         const data = form.getValues();
         const eventData: Event = {
             name: data.name,
-            date: data.date,
+            date: formatDateToISO(data.date),
             time: data.time,
             location: data.location,
             description: data.description,
@@ -78,7 +77,6 @@ const NewEvent = () => {
     }
 
     const resetCreateEvent = () => {
-        setDate(undefined);
         form.reset();
     }
 
@@ -119,37 +117,16 @@ const NewEvent = () => {
                                 control={form.control}
                                 name="date"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Data</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[210px] justify-start text-left font-normal",
-                                                            !date && "text-muted-foreground"
-                                                        )}
-                                                    >
-                                                        {date ? formatFullDatePtBr(date) : <span>Selecione uma data</span>}
-                                                        <CalendarIcon className="ml-auto h-4 w-4" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0">
-                                                    <Calendar
-                                                        locale={pt}
-                                                        mode="single"
-                                                        selected={date}
-                                                        onSelect={(date) => {
-                                                            setDate(date);
-                                                            field.onChange(format(date!, "yyyy-MM-dd"));
-                                                        }}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                            <Input {...field}
+                                                ref={dateRef}
+                                                onInput={(e) => {
+                                                    form.setValue("date", e.currentTarget.value);
+                                                }} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

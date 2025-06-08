@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarIcon, CheckIcon, ChevronsUpDownIcon, FileIcon, Loader2Icon, PenIcon } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, FileIcon, Loader2Icon, PenIcon, XIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -10,16 +10,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Calendar } from "./ui/calendar";
 import { cn } from "../lib/utils";
 import React from "react";
-import { format } from "date-fns";
 import { Textarea } from "./ui/textarea";
 import { LawsuitStatus } from "../types/lawsuit-status";
 import { getLawsuitOrderTypeByValue, LawsuitOrderType } from "../types/lawsuit-order-type";
 import { DocumentType } from "../types/document-type";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command";
-import { pt } from "date-fns/locale";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AssociateService } from "../services/associate.service";
@@ -28,9 +25,11 @@ import { LawsuitService } from "../services/lawsuit.service";
 import { Lawsuit } from "../types/lawsuit";
 import { toast } from "sonner";
 import { Spinner } from "./ui/spinner";
-import { formatFullDatePtBr } from "../util/date.util";
 import { LawsuitType } from "../types/lawsuit-type";
 import { FileService } from "../services/file.service";
+import { maskitoDateOptionsGenerator } from "@maskito/kit";
+import { useMaskito } from "@maskito/react";
+import { formatDateToISO, formatDateToPtBr } from "../util/date.util";
 
 const FormSchema = z.object({
     responsible: z.string({ required_error: "Campo obrigatório", }),
@@ -42,24 +41,19 @@ const FormSchema = z.object({
     email: z.string({ required_error: "Campo obrigatório", }),
     documentType: z.string().optional().nullable(),
     document: z.string().optional().nullable(),
-    emissionDate: z.string().optional().nullable(),
-    expirationDate: z.string().optional().nullable(),
+    emissionDate: z.string().optional(),
+    expirationDate: z.string().optional(),
     orderDate: z.string({ required_error: "Campo obrigatório", }),
     deadline: z.string({ required_error: "Campo obrigatório", }),
     observation: z.string({ required_error: "Campo obrigatório", }),
     clientType: z.string({ required_error: "Campo obrigatório", }),
     paymentStatus: z.string({ required_error: "Campo obrigatório", }),
-    documentUpload: z.array(z.string())
+    documentUpload: z.array(z.string()).optional(),
 });
 
 const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
     const queryClient = useQueryClient();
-    const [birthday, setBirthday] = React.useState<Date>(new Date(lawsuit.birthday));
     const [open, setOpen] = React.useState<boolean>(false);
-    const [emissionDate, setEmissionDate] = React.useState<Date | undefined>(lawsuit.documentEmissionDate ? new Date(lawsuit.documentEmissionDate) : undefined);
-    const [expirationDate, setExpirationDate] = React.useState<Date | undefined>(lawsuit.documentExpirationDate ? new Date(lawsuit.documentExpirationDate) : undefined);
-    const [orderDate, setOrderDate] = React.useState<Date>(new Date(lawsuit.orderDate));
-    const [deadline, setDeadline] = React.useState<Date>(new Date(lawsuit.deadline));
     const [comboboxResponsibleOpen, setComboboxResponsibleOpen] = React.useState(false)
     const [responsible, setResponsible] = React.useState(lawsuit.responsible);
     const [clientType, setClientType] = React.useState(lawsuit.type);
@@ -69,6 +63,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
     const [loadingMap, setLoadingMap] = React.useState<Record<string, boolean>>({});
     const [orderType, setOrderType] = React.useState<LawsuitOrderType>(LawsuitOrderType[lawsuit.orderType as keyof typeof LawsuitOrderType]);
     const [associate, setAssociate] = React.useState("");
+    const [fileNames, setFileNames] = React.useState<string[]>(lawsuit.fileNames);
     const [files, setFiles] = React.useState<FileList>();
     const userService = new UserService();
     const associateService = new AssociateService();
@@ -77,6 +72,36 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
     const { data } = useQuery({
         queryKey: ['users'],
         queryFn: () => userService.fetchAll(),
+    });
+    const orderDateRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
+    const birthdayRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
+    const deadlineRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
+    const emissionDateRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
+    const expirationDateRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
     });
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
@@ -87,15 +112,15 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
             status: lawsuit.status,
             type: lawsuit.orderType,
             client: lawsuit.client,
-            birthday: lawsuit.birthday,
+            birthday: formatDateToPtBr(new Date(lawsuit.birthday)),
             phone: lawsuit.phone,
             email: lawsuit.email,
             documentType: lawsuit.documentType,
             document: lawsuit.document,
-            emissionDate: lawsuit.documentEmissionDate,
-            expirationDate: lawsuit.documentExpirationDate,
-            orderDate: lawsuit.orderDate,
-            deadline: lawsuit.deadline,
+            emissionDate: lawsuit.documentEmissionDate ? formatDateToPtBr(new Date(lawsuit.documentEmissionDate)) : undefined,
+            expirationDate: lawsuit.documentExpirationDate ? formatDateToPtBr(new Date(lawsuit.documentExpirationDate)) : undefined,
+            orderDate: formatDateToPtBr(new Date(lawsuit.orderDate)),
+            deadline: formatDateToPtBr(new Date(lawsuit.deadline)),
             observation: lawsuit.description,
         }
     });
@@ -109,7 +134,6 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['lawsuits'] });
             setLoading(false);
-            form.reset();
             toast.success("Processo atualizado com sucesso!");
             setOpen(false);
         }
@@ -139,22 +163,22 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
         const data = form.getValues();
         const appointmentData: Lawsuit = {
             client: data.client,
-            birthday: data.birthday,
+            birthday: formatDateToISO(data.birthday),
             phone: data.phone,
             email: data.email,
             documentType: data.documentType == "" ? undefined : data.documentType!,
             document: data.document == "" ? undefined : data.document!,
-            documentEmissionDate: data.emissionDate == "" ? undefined : data.emissionDate!,
-            documentExpirationDate: data.expirationDate == "" ? undefined : data.expirationDate!,
-            orderDate: data.orderDate,
-            deadline: data.deadline,
+            documentEmissionDate: data.emissionDate ? formatDateToISO(data.emissionDate!) : undefined,
+            documentExpirationDate: data.expirationDate ? formatDateToISO(data.expirationDate!) : undefined,
+            orderDate: formatDateToISO(data.orderDate),
+            deadline: formatDateToISO(data.deadline),
             description: data.observation,
             status: data.status as LawsuitStatus,
             responsible: data.responsible,
             orderType: data.type as LawsuitOrderType,
             paymentStatus: data.paymentStatus,
             type: data.clientType as LawsuitType,
-            fileNames: data.documentUpload
+            fileNames: data.documentUpload && data.documentUpload.length > 0 ? [...fileNames, ...data.documentUpload] : fileNames,
         };
         const formData = new FormData();
         if (files) {
@@ -170,11 +194,6 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
         setClientType(lawsuit.type);
         setResponsible(lawsuit.responsible);
         setAssociate("");
-        setBirthday(new Date(lawsuit.birthday));
-        setEmissionDate(lawsuit.documentEmissionDate ? new Date(lawsuit.documentEmissionDate) : undefined);
-        setExpirationDate(lawsuit.documentExpirationDate ? new Date(lawsuit.documentExpirationDate) : undefined);
-        setOrderDate(new Date(lawsuit.orderDate));
-        setDeadline(new Date(lawsuit.deadline));
         setOrderType(LawsuitOrderType[lawsuit.orderType as keyof typeof LawsuitOrderType]);
         form.reset();
     }
@@ -192,9 +211,14 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
         setLoadingMap((prev) => ({ ...prev, [file]: false }));
     }
 
+    const handleFileDelete = async (file: string) => {
+        setFileNames((prev) => prev.filter((f) => f !== file));
+    }
+
     return (
         <Dialog open={open} onOpenChange={(open) => {
             if (!open) resetCreateLawsuit();
+            setFileNames(lawsuit.fileNames);
             setOpen(open);
         }}>
             <DialogTrigger>
@@ -526,37 +550,16 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                     control={form.control}
                                     name="birthday"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Data de nascimento</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                                "w-[210px] justify-start text-left font-normal",
-                                                                !birthday && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {birthday ? formatFullDatePtBr(birthday) : <span>Selecione uma data</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            locale={pt}
-                                                            mode="single"
-                                                            selected={birthday}
-                                                            onSelect={(date) => {
-                                                                setBirthday(date!);
-                                                                field.onChange(format(date!, "yyyy-MM-dd"));
-                                                            }}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
+                                                <Input {...field}
+                                                    ref={birthdayRef}
+                                                    onInput={(e) => {
+                                                        form.setValue("birthday", e.currentTarget.value);
+                                                    }} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -648,37 +651,16 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                     control={form.control}
                                     name="emissionDate"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Data de Emissão</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                                "w-[210px] justify-start text-left font-normal",
-                                                                !emissionDate && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {emissionDate ? formatFullDatePtBr(emissionDate) : <span>Selecione uma data</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            locale={pt}
-                                                            mode="single"
-                                                            selected={emissionDate}
-                                                            onSelect={(date) => {
-                                                                setEmissionDate(date);
-                                                                field.onChange(format(date!, "yyyy-MM-dd"));
-                                                            }}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
+                                                <Input {...field}
+                                                    ref={emissionDateRef}
+                                                    onInput={(e) => {
+                                                        form.setValue("emissionDate", e.currentTarget.value);
+                                                    }} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -688,37 +670,16 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                     control={form.control}
                                     name="expirationDate"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Data de Validade</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                                "w-[210px] justify-start text-left font-normal",
-                                                                !expirationDate && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {expirationDate ? formatFullDatePtBr(expirationDate) : <span>Selecione uma data</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            locale={pt}
-                                                            mode="single"
-                                                            selected={expirationDate}
-                                                            onSelect={(date) => {
-                                                                setExpirationDate(date);
-                                                                field.onChange(format(date!, "yyyy-MM-dd"));
-                                                            }}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
+                                                <Input {...field}
+                                                    ref={expirationDateRef}
+                                                    onInput={(e) => {
+                                                        form.setValue("expirationDate", e.currentTarget.value);
+                                                    }} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -731,37 +692,16 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                 control={form.control}
                                 name="orderDate"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Data de Entrada do Pedido</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[210px] justify-start text-left font-normal",
-                                                            !orderDate && "text-muted-foreground"
-                                                        )}
-                                                    >
-                                                        {orderDate ? formatFullDatePtBr(orderDate) : <span>Selecione uma data</span>}
-                                                        <CalendarIcon className="ml-auto h-4 w-4" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0">
-                                                    <Calendar
-                                                        locale={pt}
-                                                        mode="single"
-                                                        selected={orderDate}
-                                                        onSelect={(date) => {
-                                                            setOrderDate(date!);
-                                                            field.onChange(format(date!, "yyyy-MM-dd"));
-                                                        }}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                            <Input {...field}
+                                                ref={orderDateRef}
+                                                onInput={(e) => {
+                                                    form.setValue("orderDate", e.currentTarget.value);
+                                                }} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -771,37 +711,16 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                 control={form.control}
                                 name="deadline"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Data de Entrega ao Cliente</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[210px] justify-start text-left font-normal",
-                                                            !deadline && "text-muted-foreground"
-                                                        )}
-                                                    >
-                                                        {deadline ? formatFullDatePtBr(deadline) : <span>Selecione uma data</span>}
-                                                        <CalendarIcon className="ml-auto h-4 w-4" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0">
-                                                    <Calendar
-                                                        locale={pt}
-                                                        mode="single"
-                                                        selected={deadline}
-                                                        onSelect={(date) => {
-                                                            setDeadline(date!);
-                                                            field.onChange(format(date!, "yyyy-MM-dd"));
-                                                        }}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                            <Input {...field}
+                                                ref={deadlineRef}
+                                                onInput={(e) => {
+                                                    form.setValue("deadline", e.currentTarget.value);
+                                                }} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -811,6 +730,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                         <FormField
                             control={form.control}
                             name="documentUpload"
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             render={({ field: { value, onChange, ...fieldProps } }) => (
                                 <FormItem>
                                     <FormLabel>
@@ -844,16 +764,21 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                 </FormItem>
                             )}
                         />
-                        <div>
-                            {lawsuit.fileNames.map((fileName, index) => (
-                                <div key={index} className="flex justify-between items-center gap-2">
+                        <div className="flex flex-col gap-2">
+                            {fileNames.map((fileName, index) => (
+                                <div key={index} className="flex justify-between">
                                     <div className="flex items-center gap-1">
                                         <FileIcon />
                                         <span className="text-sm">{fileName}</span>
                                     </div>
-                                    <Button type="button" onClick={() => handleFileDownload(fileName)} variant="link" disabled={loadingMap[fileName]}>
-                                        {loadingMap[fileName] ? <Loader2Icon className="animate-spin" /> : "Baixar"}
-                                    </Button>
+                                    <div className="flex items-center">
+                                        <Button type="button" onClick={() => handleFileDownload(fileName)} variant="link" disabled={loadingMap[fileName]}>
+                                            {loadingMap[fileName] ? <Loader2Icon className="animate-spin" /> : "Baixar"}
+                                        </Button>
+                                        <Button className="w-8 h-8" type="button" onClick={() => handleFileDelete(fileName)} variant="destructive" disabled={loadingMap[fileName]}>
+                                            <XIcon />
+                                        </Button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

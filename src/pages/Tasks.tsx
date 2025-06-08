@@ -22,10 +22,12 @@ const Tasks = () => {
     const queryClient = useQueryClient();
     const taskService = new TaskService();
     const [search, setSearch] = useState('');
+    const [taskStatus, setTaskStatus] = useState<TaskStatus | undefined>(undefined);
+    const [taskPriority, setTaskPriority] = useState<TaskPriority | undefined>(undefined);
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const { isLoading, isError, data, error } = useQuery({
-        queryKey: ['tasks', debouncedSearch],
-        queryFn: () => taskService.filter(search),
+        queryKey: ['tasks', debouncedSearch, taskStatus, taskPriority],
+        queryFn: () => taskService.filter(search, taskStatus, taskPriority),
     });
     const mutation = useMutation({
         mutationFn: (id: string | number) => taskService.delete(id),
@@ -49,26 +51,26 @@ const Tasks = () => {
                         <NewTask />
                         <div className="flex gap-6 w-8/12">
                             <Input onChange={(e) => setSearch(e.target.value)} placeholder="Buscar tarefas..." />
-                            <Select>
+                            <Select onValueChange={(value) => setTaskStatus(value as TaskStatus)}>
                                 <SelectTrigger className="w-[310px]">
                                     <SelectValue placeholder="Selecione o status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">Todos os Status</SelectItem>
-                                    <SelectItem value="today">A fazer</SelectItem>
-                                    <SelectItem value="week">Em Progresso</SelectItem>
-                                    <SelectItem value="month">Concluído</SelectItem>
+                                    <SelectItem value="ALL">Todos os Status</SelectItem>
+                                    <SelectItem value="TODO">A fazer</SelectItem>
+                                    <SelectItem value="IN_PROGRESS">Em Progresso</SelectItem>
+                                    <SelectItem value="DONE">Concluído</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <Select>
+                            <Select onValueChange={(value) => setTaskPriority(value as TaskPriority)}>
                                 <SelectTrigger className="w-[360px]">
                                     <SelectValue placeholder="Selecione a prioridade" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">Todas as Prioridades</SelectItem>
-                                    <SelectItem value="today">Baixa</SelectItem>
-                                    <SelectItem value="week">Média</SelectItem>
-                                    <SelectItem value="month">Alta</SelectItem>
+                                    <SelectItem value="ALL">Todas as Prioridades</SelectItem>
+                                    <SelectItem value="LOW">Baixa</SelectItem>
+                                    <SelectItem value="MEDIUM">Média</SelectItem>
+                                    <SelectItem value="HIGH">Alta</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

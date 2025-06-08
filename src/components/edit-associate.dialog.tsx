@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarIcon, PenIcon } from "lucide-react";
+import { PenIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -9,45 +9,41 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod"
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Calendar } from "./ui/calendar";
-import { cn } from "../lib/utils";
 import React from "react";
-import { format } from "date-fns";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Label } from "./ui/label";
 import { EducationLevel } from "../types/education-level";
 import { Textarea } from "./ui/textarea";
 import { Checkbox } from "./ui/checkbox";
 import { AreaInterest } from "../types/area-interest";
-import { Nationality } from "../types/nationality";
 import { JobStatus } from "../types/job-status";
 import { ScrollArea } from "./ui/scroll-area";
-import { pt } from "date-fns/locale";
 import { AssociateService } from "../services/associate.service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Associate } from "../types/associate";
 import { toast } from "sonner";
 import { Spinner } from "./ui/spinner";
-import { formatFullDatePtBr } from "../util/date.util";
 import { DocumentType } from "../types/document-type";
+import { maskitoDateOptionsGenerator } from "@maskito/kit";
+import { useMaskito } from "@maskito/react";
+import { formatDateToISO, formatDateToPtBr } from "../util/date.util";
 
 const FormSchema = z.object({
     name: z.string({ required_error: "Campo obrigatório", }),
     email: z.string({ required_error: "Campo obrigatório", }),
-    gender: z.string({ required_error: "Campo obrigatório", }),
-    address: z.string({ required_error: "Campo obrigatório", }),
+    gender: z.string().optional(),
+    address: z.string().optional(),
     phone: z.string({ required_error: "Campo obrigatório" }).regex(/^\d+$/, "O número de telefone deve conter apenas dígitos"),
     birthday: z.string({ required_error: "Campo obrigatório", }),
-    nationality: z.string({ required_error: "Campo obrigatório", }),
-    education: z.string({ required_error: "Campo obrigatório", }),
+    nationality: z.string().optional(),
+    education: z.string().optional(),
     motherLanguage: z.string().optional(),
     availabilityToWork: z.string().optional(),
     profissionalExperience: z.string().optional(),
     areaInterest: z.string().optional(),
     employeeNumber: z.string().optional(),
     validityCardDate: z.string().optional(),
-    quotaStatus: z.string({ required_error: "Campo obrigatório", }),
+    quotaStatus: z.string().optional(),
     documentType: z.string().optional(),
     document: z.string().optional(),
     validityDocumentDate: z.string().optional(),
@@ -56,14 +52,29 @@ const FormSchema = z.object({
 })
 
 const EditAssociate = ({ associate }: { associate: Associate }) => {
-    const [birthday, setBirthday] = React.useState<Date>(new Date(associate.birthday));
-    const [validityCardDate, setValidityCardDate] = React.useState<Date>(new Date(associate.cardExpirationDate!));
-    const [validityDocumentDate, setValidityDocumentDate] = React.useState<Date>(new Date(associate.documentExpirationDate!));
     const [availabilityToWork, setAvailabilityToWork] = React.useState<string[]>(associate.availabilityToWork);
     const [areaInterest, setAreaInterest] = React.useState<string[]>(associate.areaInterest);
     const [loading, setLoading] = React.useState(false);
     const [open, setOpen] = React.useState<boolean>(false);
     const queryClient = useQueryClient();
+    const birthdayRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
+    const validityCardDateRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
+    const validityDocumentDateRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
@@ -72,16 +83,18 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
             name: associate.fullName,
             email: associate.email,
             phone: associate.phone,
-            birthday: associate.birthday,
-            nationality: associate.nationality,
-            education: associate.educationLevel,
-            address: associate.address,
+            birthday: formatDateToPtBr(new Date(associate.birthday)),
+            nationality: associate.nationality || undefined,
+            education: associate.educationLevel || undefined,
+            address: associate.address || undefined,
             motherLanguage: associate.motherLanguage || undefined,
             jobStatus: associate.employmentStatus || undefined,
             documentType: associate.documentType || undefined,
             document: associate.document || undefined,
             nif: associate.nif || undefined,
             employeeNumber: associate.associateNumber || undefined,
+            validityCardDate: associate.cardExpirationDate ? formatDateToPtBr(new Date(associate.cardExpirationDate)) : undefined,
+            validityDocumentDate: associate.documentExpirationDate ? formatDateToPtBr(new Date(associate.documentExpirationDate)) : undefined,
         }
     });
     const associateService = new AssociateService();
@@ -89,7 +102,6 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
         mutationFn: (createRequest: Associate) => associateService.update(associate.id!, createRequest),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['associates'] });
-            form.reset();
             toast.success("Associado atualizado com sucesso!");
             setOpen(false);
             setLoading(false);
@@ -109,7 +121,7 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
             email: data.email,
             gender: data.gender,
             phone: data.phone,
-            birthday: data.birthday,
+            birthday: formatDateToISO(data.birthday),
             nationality: data.nationality,
             educationLevel: data.education,
             address: data.address,
@@ -118,8 +130,8 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
             documentType: data.documentType as DocumentType,
             document: data.document,
             associateNumber: data.employeeNumber,
-            cardExpirationDate: data.validityCardDate,
-            documentExpirationDate: data.validityDocumentDate,
+            cardExpirationDate: data.validityCardDate ? formatDateToISO(data.validityCardDate) : undefined,
+            documentExpirationDate: data.validityDocumentDate ? formatDateToISO(data.validityDocumentDate) : undefined,
             employmentStatus: data.jobStatus,
             motherLanguage: data.motherLanguage,
             availabilityToWork: availabilityToWork,
@@ -188,7 +200,7 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                     render={({ field }) => (
                                         <FormItem className="w-full">
                                             <FormLabel>
-                                                <span>Género*</span>
+                                                <span>Género</span>
                                             </FormLabel>
                                             <FormControl>
                                                 <RadioGroup onValueChange={(value) => form.setValue("gender", value)} className="grid-flow-col" {...field}>
@@ -227,37 +239,16 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                     control={form.control}
                                     name="birthday"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Data de Nascimento*</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                                "w-[240px] justify-start text-left font-normal",
-                                                                !birthday && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {birthday ? formatFullDatePtBr(birthday) : <span>Selecione uma data</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            locale={pt}
-                                                            mode="single"
-                                                            selected={birthday}
-                                                            onSelect={(date) => {
-                                                                setBirthday(date!);
-                                                                field.onChange(format(date!, "yyyy-MM-dd"));
-                                                            }}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
+                                                <Input {...field}
+                                                    ref={birthdayRef}
+                                                    onInput={(e) => {
+                                                        form.setValue("birthday", e.currentTarget.value);
+                                                    }} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -267,23 +258,12 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                     control={form.control}
                                     name="nationality"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
-                                                <span>Nacionalidade*</span>
+                                                <span>Nacionalidade</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Select onValueChange={(value: string) => form.setValue("nationality", value)} {...field}>
-                                                    <SelectTrigger className="w-[240px]">
-                                                        <SelectValue placeholder="Selecione a nacionalidade" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {Object.entries(Nationality).map(([key, value]) => (
-                                                            <SelectItem key={key} value={key}>
-                                                                {value}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
+                                                <Input {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -297,7 +277,7 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>
-                                                <span>Escolaridade*</span>
+                                                <span>Escolaridade</span>
                                             </FormLabel>
                                             <FormControl>
                                                 <Select onValueChange={(value: string) => form.setValue("education", value)} {...field}>
@@ -382,7 +362,7 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                 render={({ field }) => (
                                     <FormItem className="w-full">
                                         <FormLabel>
-                                            <span>Morada*</span>
+                                            <span>Morada</span>
                                         </FormLabel>
                                         <FormControl>
                                             <Input {...field} />
@@ -453,37 +433,16 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                     control={form.control}
                                     name="validityCardDate"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Validade do Cartão</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                                "w-[240px] justify-start text-left font-normal",
-                                                                !validityCardDate && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {validityCardDate ? formatFullDatePtBr(validityCardDate) : <span>Selecione uma data</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            locale={pt}
-                                                            mode="single"
-                                                            selected={validityCardDate}
-                                                            onSelect={(date) => {
-                                                                setValidityCardDate(date!);
-                                                                field.onChange(format(date!, "yyyy-MM-dd"));
-                                                            }}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
+                                                <Input {...field}
+                                                    ref={validityCardDateRef}
+                                                    onInput={(e) => {
+                                                        form.setValue("validityCardDate", e.currentTarget.value);
+                                                    }} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -495,7 +454,7 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                     render={({ field }) => (
                                         <FormItem className="w-full">
                                             <FormLabel>
-                                                <span>Estado da Cota*</span>
+                                                <span>Estado da Cota</span>
                                             </FormLabel>
                                             <FormControl>
                                                 <RadioGroup onValueChange={(value) => form.setValue("quotaStatus", value)} className="grid-flow-col" {...field}>
@@ -526,7 +485,7 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                             <FormControl>
                                                 <Select onValueChange={(value: string) => form.setValue("documentType", value)} {...field}>
                                                     <SelectTrigger className="w-[240px]">
-                                                        <SelectValue placeholder="Selecione a nacionalidade" />
+                                                        <SelectValue placeholder="Selecione o tipo de documento" />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         {Object.entries(DocumentType).map(([key, value]) => (
@@ -560,37 +519,16 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                     control={form.control}
                                     name="validityDocumentDate"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 <span>Data de validade</span>
                                             </FormLabel>
                                             <FormControl>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                                "w-[240px] justify-start text-left font-normal",
-                                                                !validityDocumentDate && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {validityDocumentDate ? formatFullDatePtBr(validityDocumentDate) : <span>Selecione uma data</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            locale={pt}
-                                                            mode="single"
-                                                            selected={validityDocumentDate}
-                                                            onSelect={(date) => {
-                                                                setValidityDocumentDate(date!);
-                                                                field.onChange(format(date!, "yyyy-MM-dd"));
-                                                            }}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
+                                                <Input {...field}
+                                                    ref={validityDocumentDateRef}
+                                                    onInput={(e) => {
+                                                        form.setValue("validityDocumentDate", e.currentTarget.value);
+                                                    }} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

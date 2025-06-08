@@ -8,4 +8,6 @@ export interface Report {
   associateCount: number;
 
   lawsuitCount: number;
+
+  documentCount: number;
 }

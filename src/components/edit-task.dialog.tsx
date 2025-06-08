@@ -10,15 +10,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Calendar } from "./ui/calendar";
 import { cn } from "../lib/utils";
 import React from "react";
 import { Textarea } from "./ui/textarea";
 import { getTaskLabel, TaskPriority } from "../types/task-priority";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command";
-import { pt } from "date-fns/locale";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { formatFullDatePtBr } from "../util/date.util";
+import { formatDateToISO, formatDateToPtBr } from "../util/date.util";
 import { LawsuitService } from "../services/lawsuit.service";
 import { LawsuitOrderType } from "../types/lawsuit-order-type";
 import { UserService } from "../services/user.service";
@@ -26,7 +24,9 @@ import { TaskService } from "../services/task.service";
 import { Task } from "../types/task";
 import { toast } from "sonner";
 import { Spinner } from "./ui/spinner";
-import { format } from "date-fns";
+import { maskitoDateOptionsGenerator } from "@maskito/kit";
+import { useMaskito } from "@maskito/react";
+import { TaskStatus } from "../types/task-status";
 
 const FormSchema = z.object({
     title: z.string({ required_error: "Campo obrigatório", }),
@@ -37,11 +37,11 @@ const FormSchema = z.object({
     deadline: z.string({ required_error: "Campo obrigatório", }),
     priority: z.string({ required_error: "Campo obrigatório", }),
     description: z.string({ required_error: "Campo obrigatório", }),
+    status: z.string({ required_error: "Campo obrigatório", }),
 })
 
 const EditTask = ({ task }: { task: Task }) => {
     const queryClient = useQueryClient();
-    const [deadline, setDeadline] = React.useState<Date>(new Date(task.deadline));
     const [comboboxOpen, setComboboxOpen] = React.useState(false)
     const [comboboxLawsuitOpen, setComboboxLawsuitOpen] = React.useState(false)
     const [responsible, setResponsible] = React.useState(task.responsible);
@@ -51,11 +51,17 @@ const EditTask = ({ task }: { task: Task }) => {
     const taskService = new TaskService();
     const lawsuitService = new LawsuitService();
     const userService = new UserService();
+    const deadlineRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
     const { data } = useQuery({
         queryKey: ['users'],
         queryFn: () => userService.fetchAll(),
     });
-    
+
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
@@ -64,9 +70,10 @@ const EditTask = ({ task }: { task: Task }) => {
             lawsuit: task.lawsuitId,
             client: task.client,
             phone: task.phone,
-            deadline: format(new Date(task.deadline), "yyyy-MM-dd"),
+            deadline: formatDateToPtBr(new Date(task.deadline)),
             priority: task.priority,
             description: task.description,
+            status: task.status,
         }
     });
     const { data: lawsuitList } = useQuery({
@@ -97,19 +104,19 @@ const EditTask = ({ task }: { task: Task }) => {
         const appointmentData: Task = {
             client: data.client,
             phone: data.phone,
-            deadline: data.deadline,
+            deadline: formatDateToISO(data.deadline),
             description: data.description,
             title: data.title,
             lawsuitId: data.lawsuit,
             responsible: data.responsible,
             priority: data.priority as TaskPriority,
+            status: data.status as TaskStatus,
         };
         mutation.mutate(appointmentData);
     }
 
     const resetCreateTask = () => {
         setResponsible(task.responsible);
-        setDeadline(new Date(task.deadline));
         setLawsuitValue(task.lawsuitId);
         form.reset();
     }
@@ -262,6 +269,32 @@ const EditTask = ({ task }: { task: Task }) => {
                                 </FormItem>
                             )}
                         />
+                        <FormField
+                            control={form.control}
+                            name="status"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        <span>Status</span>
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Select onValueChange={(value: string) => form.setValue("status", value)} form="status" {...field}>
+                                            <SelectTrigger className="w-[460px]">
+                                                <SelectValue placeholder="Selecione tipo de pedido" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {Object.entries(TaskStatus).map(([key, value]) => (
+                                                    <SelectItem key={key} value={key}>
+                                                        {value as TaskStatus}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <div className="flex gap-10">
                             <FormField
                                 control={form.control}
@@ -299,37 +332,16 @@ const EditTask = ({ task }: { task: Task }) => {
                                 control={form.control}
                                 name="deadline"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Data de entrega</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Popover modal>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[215px] justify-start text-left font-normal",
-                                                            !deadline && "text-muted-foreground"
-                                                        )}
-                                                    >
-                                                        {deadline ? formatFullDatePtBr(deadline) : <span>Selecione uma data</span>}
-                                                        <CalendarIcon className="ml-auto h-4 w-4" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0">
-                                                    <Calendar
-                                                        locale={pt}
-                                                        mode="single"
-                                                        selected={deadline}
-                                                        onSelect={(date) => {
-                                                            setDeadline(date!);
-                                                            field.onChange(format(date!, "yyyy-MM-dd"));
-                                                        }}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                            <Input {...field}
+                                                ref={deadlineRef}
+                                                onInput={(e) => {
+                                                    form.setValue("deadline", e.currentTarget.value);
+                                                }} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

@@ -365,9 +365,11 @@ const NewLawsuit = () => {
                                                         aria-expanded={open}
                                                         className="w-full justify-between"
                                                     >
-                                                        {responsible
-                                                            ? data != null && data.find((user) => user.fullName === responsible)?.fullName
-                                                            : "Selecione o funcionário"}
+                                                        <span className="w-[150px] overflow-ellipsis truncate whitespace-nowrap">
+                                                            {responsible
+                                                                ? data != null && data.find((user) => user.fullName === responsible)?.fullName
+                                                                : "Selecione o funcionário"}
+                                                        </span>
                                                         <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                     </Button>
                                                 </PopoverTrigger>

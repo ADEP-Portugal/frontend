@@ -297,7 +297,7 @@ const NewAppointment = () => {
                                 control={form.control}
                                 name="date"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="w-full">
                                         <FormLabel>
                                             <span>Data</span>
                                         </FormLabel>

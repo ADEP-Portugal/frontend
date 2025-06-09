@@ -45,13 +45,13 @@ const FormSchema = z.object({
     expirationDate: z.string().optional(),
     orderDate: z.string({ required_error: "Campo obrigatório", }),
     deadline: z.string({ required_error: "Campo obrigatório", }),
-    observation: z.string({ required_error: "Campo obrigatório", }),
+    observation: z.string().optional(),
     clientType: z.string({ required_error: "Campo obrigatório", }),
     paymentStatus: z.string({ required_error: "Campo obrigatório", }),
     documentUpload: z.array(z.string()).optional(),
 });
 
-const NewLawsuit = () => {
+const NewLawsuit = ({ generatePdf }: { generatePdf: (lawsuit: Lawsuit) => Promise<void> }) => {
     const queryClient = useQueryClient();
     const [open, setOpen] = React.useState<boolean>(false);
     const [comboboxResponsibleOpen, setComboboxResponsibleOpen] = React.useState(false)
@@ -62,6 +62,7 @@ const NewLawsuit = () => {
     const [loading, setLoading] = React.useState(false);
     const [orderType, setOrderType] = React.useState<LawsuitOrderType>();
     const [files, setFiles] = React.useState<FileList>();
+    const [lawsuitData, setLawsuitData] = React.useState<Lawsuit | undefined>(undefined);
     const userService = new UserService();
     const associateService = new AssociateService();
     const fileService = new FileService();
@@ -122,6 +123,7 @@ const NewLawsuit = () => {
             setLoading(false);
             form.reset();
             toast.success("Processo criado com sucesso!");
+            generatePdf(lawsuitData!);
             setOpen(false);
         }
     });
@@ -148,7 +150,7 @@ const NewLawsuit = () => {
         }
         setLoading(true);
         const data = form.getValues();
-        const appointmentData: Lawsuit = {
+        const lawsuit: Lawsuit = {
             client: data.client,
             birthday: formatDateToISO(data.birthday),
             phone: data.phone,
@@ -167,6 +169,7 @@ const NewLawsuit = () => {
             type: data.clientType as LawsuitType,
             fileNames: data.documentUpload && data.documentUpload.length > 0 ? data.documentUpload : [],
         };
+        setLawsuitData(lawsuit);
         const formData = new FormData();
         if (files) {
             Array.from(files).forEach((file) => {
@@ -174,7 +177,7 @@ const NewLawsuit = () => {
             });
             await fileService.upload(formData);
         }
-        mutation.mutate(appointmentData);
+        mutation.mutate(lawsuit);
     }
 
     const resetCreateLawsuit = () => {
@@ -704,7 +707,7 @@ const NewLawsuit = () => {
                             render={({ field: { value, onChange, ...fieldProps } }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        <span>Documentos Necessários</span>
+                                        <span>Arquivos</span>
                                     </FormLabel>
                                     <FormControl>
                                         <Input {...fieldProps} multiple type="file" onChange={(event) => {

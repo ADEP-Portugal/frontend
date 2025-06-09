@@ -51,11 +51,12 @@ const FormSchema = z.object({
     nif: z.string().optional(),
 })
 
-const NewAssociate = () => {
+const NewAssociate = ({ generatePdf }: { generatePdf: (associate: Associate) => Promise<void> }) => {
     const [availabilityToWork, setAvailabilityToWork] = React.useState<string[]>([]);
     const [areaInterest, setAreaInterest] = React.useState<string[]>([]);
     const [loading, setLoading] = React.useState(false);
     const [open, setOpen] = React.useState<boolean>(false);
+    const [associateData, setAssociateData] = React.useState<Associate | undefined>(undefined);
     const queryClient = useQueryClient();
     const birthdayRef = useMaskito({
         options: maskitoDateOptionsGenerator({
@@ -89,6 +90,7 @@ const NewAssociate = () => {
             queryClient.invalidateQueries({ queryKey: ['associates'] });
             form.reset();
             toast.success("Associado criado com sucesso!");
+            generatePdf(associateData!);
             setOpen(false);
             setLoading(false);
         }
@@ -124,6 +126,7 @@ const NewAssociate = () => {
             areaInterest: areaInterest,
             profissionalExperience: data.profissionalExperience,
         };
+        setAssociateData(associateData);
         mutation.mutate(associateData);
     }
 

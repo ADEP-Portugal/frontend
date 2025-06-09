@@ -49,7 +49,7 @@ const AssociatePage = () => {
         const doc = new jsPDF();
 
         //Background color
-        doc.setFillColor(239, 244, 247);
+        doc.setFillColor(255, 255, 255);
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         doc.rect(0, 0, pageWidth, pageHeight, 'F');
@@ -122,7 +122,7 @@ const AssociatePage = () => {
         doc.text(associate.nif ?? "Não informado", 80, 131);
 
         //Profissional Information Values
-        doc.text(EducationLevel[associate.educationLevel as keyof typeof EducationLevel], 80, 155);
+        doc.text(EducationLevel[associate.educationLevel as keyof typeof EducationLevel] ?? "Não informado", 80, 155);
         doc.text(JobStatus[associate.employmentStatus as keyof typeof JobStatus] ?? "Não informado", 80, 163);
         doc.text(associate.availabilityToWork.length == 0 ? "Não informado" : associate.availabilityToWork.map((item) => item == "MORNING" ? "Manhã" : item == "AFTERNOON" ? "Tarde" : "Noite").join(', '), 80, 171);
         doc.text(associate.areaInterest.length == 0 ? "Não informado" : associate.areaInterest.map((item) => AreaInterest[item as keyof typeof AreaInterest]).join(", "), 80, 179);
@@ -130,13 +130,13 @@ const AssociatePage = () => {
         //Identification Document Values
         doc.text(DocumentType[associate.documentType as unknown as keyof typeof DocumentType] ?? "Não informado", 80, 203);
         doc.text(associate.document ?? "Não informado", 80, 211);
-        doc.text(formatDateToPtBr(new Date(associate.documentExpirationDate!)) ?? "Não informado", 80, 219);
+        doc.text(associate.documentExpirationDate ? formatDateToPtBr(new Date(associate.documentExpirationDate)) : "Não informado", 80, 219);
 
         //Associate Details Values
         doc.text(associate.associateNumber ?? "Não informado", 80, 243);
-        doc.text(formatDateToPtBr(new Date(associate.cardExpirationDate!)) ?? "Não informado", 80, 251);
+        doc.text(associate.cardExpirationDate ? formatDateToPtBr(new Date(associate.cardExpirationDate)) : "Não informado", 80, 251);
         doc.text(associate.quotaStatus == "PAID" ? "Paga" : "Pendente", 80, 259);
-        
+
         //Footer
         doc.setDrawColor(96, 165, 193);
         doc.setLineWidth(0.5);
@@ -156,7 +156,7 @@ const AssociatePage = () => {
             <div className="flex flex-col items-center justify-center mt-4">
                 <Card className="p-10 w-full">
                     <div className="flex justify-between">
-                        <NewAssociate />
+                        <NewAssociate generatePdf={generatePdf} />
                         <div className="flex gap-6 w-8/12">
                             <Input onChange={(e) => setSearch(e.target.value)} placeholder="Buscar associados..." />
                         </div>

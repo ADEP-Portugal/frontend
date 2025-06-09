@@ -45,7 +45,7 @@ const FormSchema = z.object({
     expirationDate: z.string().optional(),
     orderDate: z.string({ required_error: "Campo obrigatório", }),
     deadline: z.string({ required_error: "Campo obrigatório", }),
-    observation: z.string({ required_error: "Campo obrigatório", }),
+    observation: z.string().optional(),
     clientType: z.string({ required_error: "Campo obrigatório", }),
     paymentStatus: z.string({ required_error: "Campo obrigatório", }),
     documentUpload: z.array(z.string()).optional(),
@@ -740,7 +740,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                             render={({ field: { value, onChange, ...fieldProps } }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        <span>Documentos Necessários</span>
+                                        <span>Arquivos</span>
                                     </FormLabel>
                                     <FormControl>
                                         <Input {...fieldProps} multiple type="file" onChange={(event) => {

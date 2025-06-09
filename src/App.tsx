@@ -12,12 +12,12 @@ import { AuthProvider } from './context/authContext';
 import ResetPassword from './pages/ResetPassword';
 import Profile from './pages/Profile';
 import Appointment from './pages/Appointment';
-import Lawsuit from './pages/Lawsuit';
 import Tasks from './pages/Tasks';
 import { ThemeProvider } from './components/theme-provider';
 import AssociatePage from './pages/Associate';
 import UsefulLink from './pages/UsefulLink';
 import ReportPage from './pages/Report';
+import LawsuitPage from './pages/Lawsuit';
 
 const queryClient = new QueryClient();
 
@@ -39,7 +39,7 @@ function App() {
               <Route path="/email-send" element={<EmailSend />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/appointment" element={<Appointment />} />
-              <Route path="/lawsuit" element={<Lawsuit />} />
+              <Route path="/lawsuit" element={<LawsuitPage />} />
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/associate" element={<AssociatePage />} />
               <Route path="/useful-links" element={<UsefulLink />} />

@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarIcon, CheckIcon, ChevronsUpDownIcon, CirclePlus, ClockIcon } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, CirclePlus, ClockIcon } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
@@ -10,19 +10,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod"
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
-import { Calendar } from "../components/ui/calendar";
 import { cn } from "../lib/utils";
 import React from "react";
-import { format } from "date-fns";
 import { Box } from "../components/ui/box";
 import { Textarea } from "../components/ui/textarea";
-import { pt } from "date-fns/locale";
-import { formatFullDatePtBr } from "../util/date.util";
 import { AppointmentService } from "../services/appointment.service";
 import { Appointment } from "../types/appointment";
 import { toast } from "sonner";
 import { getAppointmentTypeLabel, TypeAppointment } from "../types/type-appointment";
-import { maskitoTimeOptionsGenerator } from "@maskito/kit";
+import { maskitoDateOptionsGenerator, maskitoTimeOptionsGenerator } from "@maskito/kit";
 import { useMaskito } from "@maskito/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Spinner } from "./ui/spinner";
@@ -32,6 +28,7 @@ import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Label } from "./ui/label";
 import { AssociateService } from "../services/associate.service";
 import { Gender } from "../types/gender";
+import { formatDateToISO } from "../util/date.util";
 
 const FormSchema = z.object({
     client: z.string({ required_error: "Campo obrigatório" }),
@@ -51,7 +48,6 @@ const NewAppointment = () => {
     const userService = new UserService();
     const associateService = new AssociateService();
     const [open, setOpen] = React.useState<boolean>(false);
-    const [date, setDate] = React.useState<Date>();
     const [loading, setLoading] = React.useState(false);
     const [clientType, setClientType] = React.useState("associate")
     const [responsible, setResponsible] = React.useState("")
@@ -61,6 +57,12 @@ const NewAppointment = () => {
     const timeRef = useMaskito({
         options: maskitoTimeOptionsGenerator({
             mode: 'HH:MM',
+        })
+    });
+    const dateRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
         })
     });
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -82,7 +84,6 @@ const NewAppointment = () => {
         mutationFn: (createRequest: Appointment) => appointmentService.create(createRequest),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['appointments'] });
-            setDate(undefined);
             setLoading(false);
             setOpen(false);
             setResponsible("");
@@ -110,7 +111,7 @@ const NewAppointment = () => {
         const appointmentData: Appointment = {
             client: data.client,
             gender: data.gender as Gender,
-            date: data.date,
+            date: formatDateToISO(data.date),
             time: data.time,
             type: data.type.toUpperCase() as TypeAppointment,
             reason: data.reason,
@@ -124,7 +125,6 @@ const NewAppointment = () => {
     const resetCreateAppointment = () => {
         setResponsible("");
         setAssociate("");
-        setDate(undefined);
         form.reset();
     }
 
@@ -302,32 +302,11 @@ const NewAppointment = () => {
                                             <span>Data</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[210px] justify-start text-left font-normal",
-                                                            !date && "text-muted-foreground"
-                                                        )}
-                                                    >
-                                                        {date ? formatFullDatePtBr(date) : <span>Selecione uma data</span>}
-                                                        <CalendarIcon className="ml-auto h-4 w-4" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0">
-                                                    <Calendar
-                                                        locale={pt}
-                                                        mode="single"
-                                                        selected={date}
-                                                        onSelect={(date) => {
-                                                            setDate(date);
-                                                            field.onChange(format(date!, "yyyy-MM-dd"));
-                                                        }}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                            <Input {...field}
+                                                ref={dateRef}
+                                                onInput={(e) => {
+                                                    form.setValue("date", e.currentTarget.value);
+                                                }} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

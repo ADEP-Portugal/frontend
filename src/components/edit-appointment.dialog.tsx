@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarIcon, CheckIcon, ChevronsUpDownIcon, ClockIcon, PenIcon } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, ClockIcon, PenIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -10,19 +10,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Calendar } from "./ui/calendar";
 import { cn } from "../lib/utils";
 import React from "react";
-import { format } from "date-fns";
 import { Box } from "./ui/box";
 import { Textarea } from "./ui/textarea";
-import { pt } from "date-fns/locale";
-import { formatFullDatePtBr } from "../util/date.util";
 import { AppointmentService } from "../services/appointment.service";
 import { Appointment } from "../types/appointment";
 import { toast } from "sonner";
 import { TypeAppointment } from "../types/type-appointment";
-import { maskitoTimeOptionsGenerator } from "@maskito/kit";
+import { maskitoDateOptionsGenerator, maskitoTimeOptionsGenerator } from "@maskito/kit";
 import { useMaskito } from "@maskito/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Spinner } from "./ui/spinner";
@@ -32,6 +28,7 @@ import { Gender } from "../types/gender";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Label } from "./ui/label";
 import { AssociateService } from "../services/associate.service";
+import { formatDateToISO, formatDateToPtBr } from "../util/date.util";
 
 const FormSchema = z.object({
     client: z.string({ required_error: "Campo obrigatório" }),
@@ -51,7 +48,6 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
     const userService = new UserService();
     const associateService = new AssociateService();
     const [open, setOpen] = React.useState<boolean>(false);
-    const [date, setDate] = React.useState<Date>(new Date(appointment.date));
     const [loading, setLoading] = React.useState(false);
     const [value, setValue] = React.useState(appointment.responsible);
     const [clientType, setClientType] = React.useState(appointment.associate == true ? "associate" : "non-associate");
@@ -63,6 +59,12 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
             mode: 'HH:MM',
         })
     });
+    const dateRef = useMaskito({
+        options: maskitoDateOptionsGenerator({
+            mode: 'dd/mm/yyyy',
+            separator: '/',
+        })
+    });
     const { data, isLoading } = useQuery({
         queryKey: ['users'],
         queryFn: () => userService.fetchAll(),
@@ -71,7 +73,7 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
         resolver: zodResolver(FormSchema),
         defaultValues: {
             client: appointment.client,
-            date: appointment.date,
+            date: formatDateToPtBr(new Date(appointment.date)),
             time: appointment.time,
             reason: appointment.reason,
             description: appointment.description,
@@ -106,7 +108,7 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
         const appointmentData: Appointment = {
             client: data.client,
             gender: data.gender as Gender,
-            date: data.date,
+            date: formatDateToISO(data.date),
             time: data.time,
             type: data.type.toUpperCase() as TypeAppointment,
             reason: data.reason,
@@ -118,7 +120,6 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
     }
 
     const resetCreateAppointment = () => {
-        setDate(new Date(appointment.date));
         setValue(appointment.responsible);
         form.reset();
     }
@@ -304,32 +305,11 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
                                             <span>Data</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[210px] justify-start text-left font-normal",
-                                                            !date && "text-muted-foreground"
-                                                        )}
-                                                    >
-                                                        {date ? formatFullDatePtBr(date) : <span>Selecione uma data</span>}
-                                                        <CalendarIcon className="ml-auto h-4 w-4" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0">
-                                                    <Calendar
-                                                        locale={pt}
-                                                        mode="single"
-                                                        selected={date}
-                                                        onSelect={(date) => {
-                                                            setDate(date!);
-                                                            field.onChange(format(date!, "yyyy-MM-dd"));
-                                                        }}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                            <Input {...field}
+                                                ref={dateRef}
+                                                onInput={(e) => {
+                                                    form.setValue("date", e.currentTarget.value);
+                                                }} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

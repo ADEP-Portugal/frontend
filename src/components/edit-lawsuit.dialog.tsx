@@ -178,7 +178,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
             orderType: data.type as LawsuitOrderType,
             paymentStatus: data.paymentStatus,
             type: data.clientType as LawsuitType,
-            fileNames: data.documentUpload && data.documentUpload.length > 0 ? [...fileNames, ...data.documentUpload] : fileNames,
+            fileNames: fileNames,
         };
         const formData = new FormData();
         if (files) {
@@ -212,6 +212,10 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
     }
 
     const handleFileDelete = async (file: string) => {
+        const filteredFiles = Array.from(files || []).filter((f) => f.name !== file);
+        const dataTransfer = new DataTransfer();
+        filteredFiles.forEach((f) => dataTransfer.items.add(f));
+        setFiles(dataTransfer.files);
         setFileNames((prev) => prev.filter((f) => f !== file));
     }
 
@@ -229,7 +233,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Adicionar Novo Processo</DialogTitle>
+                    <DialogTitle>Editar Processo</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-4">
@@ -740,10 +744,10 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                         <Input {...fieldProps} multiple type="file" onChange={(event) => {
                                             if (event.target.files) {
                                                 onChange(Array.from(event.target.files).map((file) => file.name));
+                                                setFileNames([...fileNames, ...Array.from(event.target.files).map((file) => file.name)]);
                                                 setFiles(event.target.files);
                                             }
-                                        }
-                                        } />
+                                        }} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

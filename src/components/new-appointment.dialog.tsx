@@ -196,7 +196,7 @@ const NewAppointment = () => {
                                                         className="w-full justify-between"
                                                     >
                                                         {associate
-                                                            ? associateList != null && `${associateList.find((associateItem) => associateItem.id === associate)?.fullName} ${associateList.find((associateItem) => associateItem.id === associate)?.phone} `
+                                                            ? associateList != null && `${associateList.find((associateItem) => associateItem.fullName === associate)?.fullName} ${associateList.find((associateItem) => associateItem.fullName === associate)?.phone} `
                                                             : "Selecione o sócio"}
                                                         <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                     </Button>
@@ -210,11 +210,11 @@ const NewAppointment = () => {
                                                                 {associateList != null && associateList.map((associateItem) => (
                                                                     <CommandItem
                                                                         key={associateItem.id}
-                                                                        value={associateItem.id}
+                                                                        value={associateItem.fullName}
                                                                         onSelect={(currentValue) => {
                                                                             setAssociate(currentValue);
                                                                             setComboboxAssociateOpen(false);
-                                                                            form.setValue("gender", associateList.find((associateItem) => associateItem.id === currentValue)!.gender!);
+                                                                            form.setValue("gender", associateList.find((associateItem) => associateItem.fullName === currentValue)!.gender!);
                                                                             form.setValue("client", associateItem.fullName);
                                                                         }}
                                                                     >

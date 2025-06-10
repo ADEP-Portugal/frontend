@@ -62,7 +62,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
     const [loading, setLoading] = React.useState(false);
     const [loadingMap, setLoadingMap] = React.useState<Record<string, boolean>>({});
     const [orderType, setOrderType] = React.useState<LawsuitOrderType>(LawsuitOrderType[lawsuit.orderType as keyof typeof LawsuitOrderType]);
-    const [associate, setAssociate] = React.useState("");
+    const [associate, setAssociate] = React.useState(lawsuit.client);
     const [fileNames, setFileNames] = React.useState<string[]>(lawsuit.fileNames);
     const [files, setFiles] = React.useState<FileList>();
     const userService = new UserService();
@@ -193,7 +193,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
     const resetCreateLawsuit = () => {
         setClientType(lawsuit.type);
         setResponsible(lawsuit.responsible);
-        setAssociate("");
+        setAssociate(lawsuit.client);
         setOrderType(LawsuitOrderType[lawsuit.orderType as keyof typeof LawsuitOrderType]);
         form.reset();
     }
@@ -328,7 +328,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                                         className="w-full justify-between"
                                                     >
                                                         {associate
-                                                            ? associateList != null && `${associateList.find((associateItem) => associateItem.id === associate)?.fullName} ${associateList.find((associateItem) => associateItem.id === associate)?.phone} `
+                                                            ? associateList != null && `${associateList.find((associateItem) => associateItem.fullName === associate)?.fullName} ${associateList.find((associateItem) => associateItem.fullName === associate)?.phone} `
                                                             : "Selecione o sócio"}
                                                         <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                     </Button>
@@ -342,7 +342,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                                                 {associateList != null && associateList.map((associateItem) => (
                                                                     <CommandItem
                                                                         key={associateItem.id}
-                                                                        value={associateItem.id}
+                                                                        value={associateItem.fullName}
                                                                         onSelect={(currentValue) => {
                                                                             setAssociate(currentValue);
                                                                             setComboboxAssociateOpen(false);

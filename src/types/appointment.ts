@@ -21,4 +21,6 @@ export interface Appointment {
   gender: Gender;
 
   associate: boolean;
+
+  phone: string | undefined;
 }

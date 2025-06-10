@@ -40,6 +40,7 @@ const FormSchema = z.object({
     description: z.string({ required_error: "Campo obrigatório", }),
     gender: z.string({ required_error: "Campo obrigatório", }),
     clientType: z.string({ required_error: "Campo obrigatório", }),
+    phone: z.string().optional(),
 });
 
 const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
@@ -54,6 +55,7 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
     const [associate, setAssociate] = React.useState(appointment.client);
     const [comboboxOpen, setComboboxOpen] = React.useState(false);
     const [comboboxAssociateOpen, setComboboxAssociateOpen] = React.useState(false)
+    const [type, setType] = React.useState<TypeAppointment>(appointment.type)
     const timeRef = useMaskito({
         options: maskitoTimeOptionsGenerator({
             mode: 'HH:MM',
@@ -81,6 +83,7 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
             gender: appointment.gender,
             type: appointment.type.toUpperCase() as TypeAppointment,
             clientType: appointment.associate == true ? "associate" : "non-associate",
+            phone: appointment.phone || "",
         }
     });
     const { data: associateList } = useQuery({
@@ -115,6 +118,7 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
             responsible: data.responsible,
             description: data.description,
             associate: clientType === 'associate' ? true : false,
+            phone: data.phone,
         };
         mutation.mutate(appointmentData);
     }
@@ -351,7 +355,7 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
                                             <span>Tipo de Atendimento</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Select onValueChange={(e: string) => form.setValue("type", e)} {...field}>
+                                            <Select onValueChange={(value: string) => { form.setValue("type", value); setType(value as TypeAppointment); }} {...field}>
                                                 <SelectTrigger className="w-[210px]">
                                                     <SelectValue placeholder="Selecione tipo de atendimento" />
                                                 </SelectTrigger>
@@ -382,7 +386,7 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
                                                         aria-expanded={open}
                                                         className="w-full justify-between"
                                                     >
-                                                        <span className="w-[150px] overflow-ellipsis truncate whitespace-nowrap">
+                                                        <span className="w-[150px] overflow-ellipsis truncate whitespace-nowrap text-start">
                                                             {value
                                                                 ? data != null && data.find((user) => user.fullName === value)?.fullName
                                                                 : "Selecione o funcionário"}
@@ -426,6 +430,21 @@ const EditAppointment = ({ appointment }: { appointment: Appointment }) => {
                                 )}
                             />
                         </div>
+                        {type === TypeAppointment.TELEPHONE && <FormField
+                            control={form.control}
+                            name="phone"
+                            render={({ field }) => (
+                                <FormItem className="w-full">
+                                    <FormLabel>
+                                        <span>Telemóvel</span>
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />}
                         <FormField
                             control={form.control}
                             name="description"

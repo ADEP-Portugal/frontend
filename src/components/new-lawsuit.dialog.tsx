@@ -368,7 +368,7 @@ const NewLawsuit = ({ generatePdf }: { generatePdf: (lawsuit: Lawsuit) => Promis
                                                         aria-expanded={open}
                                                         className="w-full justify-between"
                                                     >
-                                                        <span className="w-[150px] overflow-ellipsis truncate whitespace-nowrap">
+                                                        <span className="w-[150px] overflow-ellipsis truncate whitespace-nowrap text-start">
                                                             {responsible
                                                                 ? data != null && data.find((user) => user.fullName === responsible)?.fullName
                                                                 : "Selecione o funcionário"}

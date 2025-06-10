@@ -40,6 +40,7 @@ const FormSchema = z.object({
     description: z.string({ required_error: "Campo obrigatório", }),
     clientType: z.string({ required_error: "Campo obrigatório", }),
     gender: z.string({ required_error: "Campo obrigatório", }),
+    phone: z.string().optional(),
 });
 
 const NewAppointment = () => {
@@ -54,6 +55,7 @@ const NewAppointment = () => {
     const [associate, setAssociate] = React.useState("")
     const [comboboxResponsibleOpen, setComboboxResponsibleOpen] = React.useState(false)
     const [comboboxAssociateOpen, setComboboxAssociateOpen] = React.useState(false)
+    const [type, setType] = React.useState<TypeAppointment | undefined>(undefined)
     const timeRef = useMaskito({
         options: maskitoTimeOptionsGenerator({
             mode: 'HH:MM',
@@ -118,6 +120,7 @@ const NewAppointment = () => {
             responsible: data.responsible,
             description: data.description,
             associate: data.clientType === "associate" ? true : false,
+            phone: data.phone,
         };
         mutation.mutate(appointmentData);
     }
@@ -347,7 +350,7 @@ const NewAppointment = () => {
                                             <span>Tipo de Atendimento</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Select onValueChange={(value: string) => form.setValue("type", value)} {...field}>
+                                            <Select onValueChange={(value: string) => { form.setValue("type", value); setType(value as TypeAppointment); }} {...field}>
                                                 <SelectTrigger className="w-[210px]">
                                                     <SelectValue placeholder="Selecione tipo de atendimento" />
                                                 </SelectTrigger>
@@ -381,7 +384,7 @@ const NewAppointment = () => {
                                                         aria-expanded={open}
                                                         className="w-full justify-between"
                                                     >
-                                                        <span className="w-[150px] overflow-ellipsis truncate whitespace-nowrap">
+                                                        <span className="w-[150px] overflow-ellipsis truncate whitespace-nowrap text-start">
                                                             {responsible
                                                                 ? data != null && data.find((user) => user.fullName === responsible)?.fullName
                                                                 : "Selecione o funcionário"}
@@ -425,6 +428,21 @@ const NewAppointment = () => {
                                 )}
                             />
                         </div>
+                        {type === TypeAppointment.TELEPHONE && <FormField
+                            control={form.control}
+                            name="phone"
+                            render={({ field }) => (
+                                <FormItem className="w-full">
+                                    <FormLabel>
+                                        <span>Telemóvel</span>
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />}
                         <FormField
                             control={form.control}
                             name="description"

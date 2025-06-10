@@ -16,6 +16,7 @@
     "@fullcalendar/core": "^6.1.17",
     "@fullcalendar/daygrid": "^6.1.17",
     "@fullcalendar/react": "^6.1.17",
+    "@fullcalendar/timegrid": "^6.1.17",
     "@hookform/resolvers": "^5.0.1",
     "@maskito/core": "^3.7.2",
     "@maskito/kit": "^3.7.2",

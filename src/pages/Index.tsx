@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { EducationLevel } from "../types/education-level";
 import AssociateFullDetails from "../components/associate-full-details.dialog";
 import { DocumentType } from "../types/document-type";
+import timeGridPlugin from '@fullcalendar/timegrid';
 
 const Index = () => {
   const events: { title: string, start: Date }[] = [];
@@ -323,9 +324,23 @@ const Index = () => {
         <Card className="p-6">
           <FullCalendar
             locale={"pt-br"}
-            plugins={[dayGridPlugin]}
-            initialView='dayGridMonth'
+            plugins={[dayGridPlugin, timeGridPlugin]}
+            initialView='timeGridDay'
             events={events}
+            headerToolbar={{
+              left: 'prev next',
+              center: 'title',
+              right: 'dayGridMonth,dayGridWeek,timeGridDay'
+            }}
+            slotMinTime="06:00:00"
+            slotMaxTime="20:00:00"
+            slotDuration="00:30:00"
+            allDaySlot={false}
+            buttonText={{
+              month: 'Mês',
+              week: 'Semana',
+              day: 'Dia'
+            }}
             eventContent={renderEventContent}
             eventClick={() => {
               navigate("/agenda");

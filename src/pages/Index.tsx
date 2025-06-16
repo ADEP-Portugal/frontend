@@ -86,11 +86,11 @@ const Index = () => {
   });
   const { data: eventList } = useQuery({
     queryKey: ['events'],
-    queryFn: () => eventService.filter(),
+    queryFn: () => eventService.fetchAll(),
   });
 
-  if (eventList != null && eventList.data.length > 0) {
-    eventList.data.map((item) => {
+  if (eventList != null && eventList.length > 0) {
+    eventList.map((item) => {
       events.push({
         title: item.name,
         start: combineIsoDateAndTime(item.date, item.time),
@@ -320,8 +320,8 @@ const Index = () => {
           ))}
         </div>
       )}
-      <div className="m-5">
-        <Card className="p-6">
+      <div className="my-5">
+        <Card className="p-6 rounded-lg">
           <FullCalendar
             locale={"pt-br"}
             plugins={[dayGridPlugin, timeGridPlugin]}
@@ -330,10 +330,10 @@ const Index = () => {
             headerToolbar={{
               left: 'prev next',
               center: 'title',
-              right: 'dayGridMonth,dayGridWeek,timeGridDay'
+              right: 'dayGridMonth,timeGridWeek,timeGridDay'
             }}
-            slotMinTime="06:00:00"
-            slotMaxTime="20:00:00"
+            slotMinTime="09:00:00"
+            slotMaxTime="22:00:00"
             slotDuration="00:30:00"
             allDaySlot={false}
             buttonText={{

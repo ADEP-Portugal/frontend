@@ -4,7 +4,7 @@ export interface Lawsuit {
 
   client: string;
 
-  birthday: string;
+  birthday: string | undefined;
 
   phone: string;
 

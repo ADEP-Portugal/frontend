@@ -238,16 +238,16 @@ const EditTask = ({ task }: { task: Task }) => {
                                                 <Command>
                                                     <CommandInput placeholder="Busque por processos..." />
                                                     <CommandList>
-                                                        <CommandEmpty>Nenhum funcionário encontrado</CommandEmpty>
+                                                        <CommandEmpty>Nenhum processo encontrado</CommandEmpty>
                                                         <CommandGroup>
                                                             {lawsuitList != null && lawsuitList.map((lawsuit) => (
                                                                 <CommandItem
                                                                     key={lawsuit.id}
-                                                                    value={lawsuit.id}
-                                                                    onSelect={(currentValue) => {
-                                                                        setLawsuitValue(currentValue);
+                                                                    value={lawsuit.id + ' ' + lawsuit.client}
+                                                                    onSelect={() => {
+                                                                        setLawsuitValue(lawsuit.id!);
                                                                         setComboboxLawsuitOpen(false);
-                                                                        form.setValue("lawsuit", currentValue);
+                                                                        form.setValue("lawsuit", lawsuit.id!);
                                                                     }}
                                                                 >
                                                                     <CheckIcon

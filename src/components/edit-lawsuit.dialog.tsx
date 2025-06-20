@@ -114,7 +114,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
             status: lawsuit.status,
             type: lawsuit.orderType,
             client: lawsuit.client,
-            birthday: formatDateToPtBr(new Date(lawsuit.birthday)),
+            birthday: lawsuit.birthday ? formatDateToPtBr(new Date(lawsuit.birthday)) : undefined,
             phone: lawsuit.phone,
             email: lawsuit.email,
             documentType: lawsuit.documentType,

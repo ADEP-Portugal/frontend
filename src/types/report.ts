@@ -5,9 +5,11 @@ export interface Report {
 
   eventCount: number;
 
-  associateCount: number;
+  newAssociateCount: number;
 
   lawsuitCount: number;
 
   documentCount: number;
+
+  associateCount: number;
 }

@@ -567,7 +567,7 @@ const NewAssociate = ({ generatePdf }: { generatePdf: (associate: Associate) => 
                                     )}
                                 />
                             </div>
-                            <DialogFooter className="px-6">
+                            <DialogFooter>
                                 <DialogClose asChild>
                                     <Button variant="secondary">
                                         Cancelar

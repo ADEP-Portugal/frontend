@@ -14,7 +14,7 @@ import { cn } from "../lib/utils";
 import React from "react";
 import { Textarea } from "./ui/textarea";
 import { LawsuitStatus } from "../types/lawsuit-status";
-import { getLawsuitOrderTypeByValue, LawsuitOrderType } from "../types/lawsuit-order-type";
+import { getLawsuitOrderTypeByValue, getLawsuitOrderTypeEnum, LawsuitOrderType } from "../types/lawsuit-order-type";
 import { DocumentType } from "../types/document-type";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
@@ -45,10 +45,11 @@ const FormSchema = z.object({
     expirationDate: z.string().optional(),
     orderDate: z.string({ required_error: "Campo obrigatório", }),
     deadline: z.string({ required_error: "Campo obrigatório", }),
-    observation: z.string().optional(),
+    observation: z.string().optional().nullable(),
     clientType: z.string({ required_error: "Campo obrigatório", }),
     paymentStatus: z.string({ required_error: "Campo obrigatório", }),
     documentUpload: z.array(z.string()).optional(),
+    orderTypeDescription: z.string().optional(),
 });
 
 const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
@@ -65,6 +66,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
     const [associate, setAssociate] = React.useState(lawsuit.client);
     const [fileNames, setFileNames] = React.useState<string[]>(lawsuit.fileNames);
     const [files, setFiles] = React.useState<FileList>();
+    const [orderTypeDescriptionShown, setOrderTypeDescriptionShown] = React.useState<boolean>(lawsuit.orderTypeDescription !== undefined && lawsuit.orderTypeDescription !== null && lawsuit.orderTypeDescription !== "");
     const userService = new UserService();
     const associateService = new AssociateService();
     const lawsuitService = new LawsuitService();
@@ -122,6 +124,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
             orderDate: formatDateToPtBr(new Date(lawsuit.orderDate)),
             deadline: formatDateToPtBr(new Date(lawsuit.deadline)),
             observation: lawsuit.description,
+            orderTypeDescription: lawsuit.orderTypeDescription,
         }
     });
     const { data: associateList } = useQuery({
@@ -179,6 +182,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
             paymentStatus: data.paymentStatus,
             type: data.clientType as LawsuitType,
             fileNames: fileNames,
+            orderTypeDescription: data.orderTypeDescription,
         };
         const formData = new FormData();
         if (files) {
@@ -511,7 +515,13 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                                                             onSelect={(currentValue) => {
                                                                                 setOrderType(getLawsuitOrderTypeByValue(currentValue) ?? orderType);
                                                                                 setComboboxOpen(false);
-                                                                                form.setValue("type", currentValue);
+                                                                                form.setValue("type", getLawsuitOrderTypeEnum(currentValue)!.toString());
+                                                                                if (currentValue === "Outros pedidos") {
+                                                                                    setOrderTypeDescriptionShown(true);
+                                                                                } else {
+                                                                                    setOrderTypeDescriptionShown(false);
+                                                                                    form.setValue("orderTypeDescription", "");
+                                                                                }
                                                                             }}
                                                                         >
                                                                             <CheckIcon
@@ -535,6 +545,23 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
                                 </FormItem>
                             )}
                         />
+                        {orderTypeDescriptionShown && (
+                            <FormField
+                                control={form.control}
+                                name="orderTypeDescription"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            <span>Descrição do Tipo de Pedido</span>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                         {
                             clientType === "NON_ASSOCIATE" && (<div className="flex gap-10">
                                 <FormField

@@ -158,7 +158,7 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[850px] px-0">
                 <DialogHeader className="px-6">
-                    <DialogTitle>Adicionar Novo Associado</DialogTitle>
+                    <DialogTitle>Editar Associado</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="h-[700px] px-6">
                     <Form {...form}>
@@ -578,7 +578,7 @@ const EditAssociate = ({ associate }: { associate: Associate }) => {
                                     )}
                                 />
                             </div>
-                            <DialogFooter className="px-6">
+                            <DialogFooter>
                                 <DialogClose asChild>
                                     <Button variant="secondary">
                                         Cancelar

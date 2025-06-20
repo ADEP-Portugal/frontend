@@ -22,15 +22,28 @@ import EditAssociate from "../components/edit-associate.dialog";
 import { toast } from "sonner";
 import { AreaInterest } from "../types/area-interest";
 import { DocumentType } from "../types/document-type";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 
 const AssociatePage = () => {
     const queryClient = useQueryClient();
     const associateService = new AssociateService();
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [filterValue, setFilterValue] = useState("name");
     const { isLoading, isError, data: associateList, error } = useQuery({
         queryKey: ['associates', debouncedSearch],
-        queryFn: () => associateService.filter(search),
+        queryFn: () => {
+            switch (filterValue) {
+                case "name":
+                    return associateService.filterAll(search);
+                case "phone":
+                    return associateService.filterAll(undefined, search);
+                case "associateNumber":
+                    return associateService.filterAll(undefined, undefined, search);
+                default:
+                    return associateService.filterAll(search);
+            }
+        },
     });
     const mutation = useMutation({
         mutationFn: (id: string | number) => associateService.delete(id),
@@ -159,6 +172,22 @@ const AssociatePage = () => {
                         <NewAssociate generatePdf={generatePdf} />
                         <div className="flex gap-6 w-8/12">
                             <Input onChange={(e) => setSearch(e.target.value)} placeholder="Buscar associados..." />
+                            <Select value={filterValue} onValueChange={setFilterValue}>
+                                <SelectTrigger className="w-[240px]">
+                                    <SelectValue placeholder="Selecione o tipo de filtro" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="name">
+                                        Nome
+                                    </SelectItem>
+                                    <SelectItem value="phone">
+                                        Telemóvel
+                                    </SelectItem>
+                                    <SelectItem value="associateNumber">
+                                        Número de Associado
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                     <div className="gap-6">
@@ -174,13 +203,13 @@ const AssociatePage = () => {
                                 <span className="text-red-500">{error.message}</span>
                             </div>
                         )}
-                        {associateList != null && associateList.data != null && associateList.data.length === 0 && (
+                        {associateList != null && associateList != null && associateList.length === 0 && (
                             <div className="text-3xl flex flex-col items-center justify-center col-span-4">
                                 <StickyNoteIcon size={40} className="text-gray-500" />
                                 <span className="text-gray-500">Nenhum agendamento encontrado</span>
                             </div>
                         )}
-                        {associateList != null && associateList.data.map((associate, index) => (
+                        {associateList != null && associateList.map((associate, index) => (
                             <Card className="w-full mt-4" key={index}>
                                 <CardHeader>
                                     <CardTitle className="flex justify-between items-center">

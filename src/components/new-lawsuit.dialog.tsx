@@ -49,6 +49,7 @@ const FormSchema = z.object({
     clientType: z.string({ required_error: "Campo obrigatório", }),
     paymentStatus: z.string({ required_error: "Campo obrigatório", }),
     documentUpload: z.array(z.string()).optional(),
+    orderTypeDescription: z.string().optional(),
 });
 
 const NewLawsuit = ({ generatePdf }: { generatePdf: (lawsuit: Lawsuit) => Promise<void> }) => {
@@ -63,6 +64,7 @@ const NewLawsuit = ({ generatePdf }: { generatePdf: (lawsuit: Lawsuit) => Promis
     const [orderType, setOrderType] = React.useState<LawsuitOrderType>();
     const [files, setFiles] = React.useState<FileList>();
     const [lawsuitData, setLawsuitData] = React.useState<Lawsuit | undefined>(undefined);
+    const [orderTypeDescriptionShown, setOrderTypeDescriptionShown] = React.useState<boolean>(false);
     const userService = new UserService();
     const associateService = new AssociateService();
     const fileService = new FileService();
@@ -168,6 +170,7 @@ const NewLawsuit = ({ generatePdf }: { generatePdf: (lawsuit: Lawsuit) => Promis
             paymentStatus: data.paymentStatus,
             type: data.clientType as LawsuitType,
             fileNames: data.documentUpload && data.documentUpload.length > 0 ? data.documentUpload : [],
+            orderTypeDescription: data.orderTypeDescription,
         };
         setLawsuitData(lawsuit);
         const formData = new FormData();
@@ -479,6 +482,12 @@ const NewLawsuit = ({ generatePdf }: { generatePdf: (lawsuit: Lawsuit) => Promis
                                                                                 setOrderType(getLawsuitOrderTypeByValue(currentValue));
                                                                                 setComboboxOpen(false);
                                                                                 form.setValue("type", currentValue);
+                                                                                if (currentValue === "Outros pedidos") {
+                                                                                    setOrderTypeDescriptionShown(true);
+                                                                                } else {
+                                                                                    setOrderTypeDescriptionShown(false);
+                                                                                    form.setValue("orderTypeDescription", "");
+                                                                                }
                                                                             }}
                                                                         >
                                                                             <CheckIcon
@@ -502,6 +511,21 @@ const NewLawsuit = ({ generatePdf }: { generatePdf: (lawsuit: Lawsuit) => Promis
                                 </FormItem>
                             )}
                         />
+                        {orderTypeDescriptionShown && (<FormField
+                            control={form.control}
+                            name="orderTypeDescription"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        <span>Descrição do Tipo de Pedido</span>
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />)}
                         {
                             clientType === "NON_ASSOCIATE" && (<div className="flex gap-10">
                                 <FormField

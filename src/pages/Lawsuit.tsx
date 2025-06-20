@@ -1,6 +1,6 @@
 "use client"
 
-import { BriefcaseBusinessIcon, CalendarIcon, DollarSignIcon, DownloadIcon, FileIcon, Loader2Icon, PhoneIcon, StickyNoteIcon, Trash, UserIcon } from "lucide-react";
+import { ArchiveIcon, BriefcaseBusinessIcon, CalendarIcon, DollarSignIcon, DownloadIcon, FileIcon, Loader2Icon, PhoneIcon, StickyNoteIcon, Trash, UserIcon } from "lucide-react";
 import { Header } from "../components/header";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
@@ -20,15 +20,18 @@ import EditLawsuit from "../components/edit-lawsuit.dialog";
 import jsPDF from "jspdf";
 import { Lawsuit } from "../types/lawsuit";
 import { DocumentType } from "../types/document-type";
+import { PeriodFilter, getPeriodEventRequestToPtBr } from "../types/period-filter";
 
 const LawsuitPage = () => {
     const queryClient = useQueryClient();
     const lawsuitService = new LawsuitService();
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [period, setPeriod] = useState<PeriodFilter>(PeriodFilter.ALL);
+    const [showArchived, setShowArchived] = useState<boolean>(false);
     const { isLoading, isError, data, error } = useQuery({
-        queryKey: ['lawsuits', debouncedSearch],
-        queryFn: () => lawsuitService.filter(search),
+        queryKey: ['lawsuits', debouncedSearch, period, showArchived],
+        queryFn: () => lawsuitService.filter(search, period, showArchived),
     });
     const mutation = useMutation({
         mutationFn: (id: string | number) => lawsuitService.delete(id),
@@ -159,17 +162,25 @@ const LawsuitPage = () => {
                     <CardContent>
                         <div className="flex justify-between">
                             <NewLawsuit generatePdf={generatePdf} />
+                            {showArchived ? <Button variant="outline" onClick={() => setShowArchived(false)}>
+                                <ArchiveIcon />
+                                Exibir não arquivados
+                            </Button> : <Button variant="outline" onClick={() => setShowArchived(true)}>
+                                <ArchiveIcon />
+                                Exibir arquivados
+                            </Button>}
                             <div className="flex gap-6 w-8/12">
                                 <Input onChange={(e) => setSearch(e.target.value)} placeholder="Buscar processos..." />
-                                <Select>
+                                <Select value={period} onValueChange={(value) => setPeriod(value as PeriodFilter)}>
                                     <SelectTrigger className="w-[255px]">
                                         <SelectValue placeholder="Selecione o período" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">Todos os Processos</SelectItem>
-                                        <SelectItem value="today">Hoje</SelectItem>
-                                        <SelectItem value="week">Esta Semana</SelectItem>
-                                        <SelectItem value="month">Este Mês</SelectItem>
+                                        {Object.entries(PeriodFilter).map(([key, value]) => (
+                                            <SelectItem key={key} value={value}>
+                                                {getPeriodEventRequestToPtBr(value)}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>

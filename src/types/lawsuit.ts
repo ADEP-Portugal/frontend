@@ -26,7 +26,7 @@ export interface Lawsuit {
 
   orderType: string;
 
-  description: string | undefined;
+  description: string | undefined | null;
 
   responsible: string;
 
@@ -35,4 +35,6 @@ export interface Lawsuit {
   type: string;
 
   fileNames: string[];
+
+  orderTypeDescription: string | undefined;
 }

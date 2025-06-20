@@ -28,6 +28,7 @@ const ReportPage = () => {
         { task: report!.taskCount },
         { event: report!.eventCount },
         { document: report!.documentCount },
+        { newAssociate: report!.newAssociateCount },
         { associate: report!.associateCount },
         { lawsuit: report!.lawsuitCount },
     ] : [];
@@ -48,9 +49,13 @@ const ReportPage = () => {
             label: "Documentos",
             color: "#9333ea",
         },
-        associate: {
-            label: "Associados",
+        newAssociate: {
+            label: "Novos Associados",
             color: "red",
+        },
+        associate: {
+            label: "Total Associados",
+            color: "green",
         },
         lawsuit: {
             label: "Processos",
@@ -121,48 +126,53 @@ const ReportPage = () => {
                                 <h1 className="mt-4 text-2xl font-bold">
                                     Relatório do Dia - {formatFullDatePtBr(date)}
                                 </h1>
-                                <div className="flex justify-between items-center mt-2">
-                                    <div>
-                                        <h1 className="mt-4 text-xl font-bold">
+                                <div className="flex items-center mt-4">
+                                    <div className="w-1/4">
+                                        <h1 className="text-xl font-bold">
                                             Atendimentos
                                         </h1>
                                         Total: {report.appointmentCount}
                                     </div>
-                                    <div>
-                                        <h1 className="mt-4 text-xl font-bold">
+                                    <div className="w-1/4">
+                                        <h1 className="text-xl font-bold">
                                             Tarefas
                                         </h1>
                                         Total: {report.taskCount}
                                     </div>
-                                    <div>
-                                        <h1 className="mt-4 text-xl font-bold">
+                                    <div className="w-1/4">
+                                        <h1 className="text-xl font-bold">
                                             Eventos
                                         </h1>
                                         Total: {report.eventCount}
                                     </div>
-                                    <div>
-                                        <h1 className="mt-4 text-xl font-bold">
+                                    <div className="w-1/4">
+                                        <h1 className="text-xl font-bold">
                                             Documentos
                                         </h1>
                                         Total: {report.documentCount}
                                     </div>
                                 </div>
-                                <div className="flex justify-between items-center mt-2">
-                                    <div>
-                                        <h1 className="mt-4 text-xl font-bold">
+                                <div className="flex items-center mt-4">
+                                    <div className="w-1/4">
+                                        <h1 className="text-xl font-bold">
                                             Novos Associados
+                                        </h1>
+                                        Total: {report.newAssociateCount}
+                                    </div>
+                                    <div className="w-1/4">
+                                        <h1 className="text-xl font-bold">
+                                            Total de Associados
                                         </h1>
                                         Total: {report.associateCount}
                                     </div>
-                                    <div className="w-15">
-                                    </div>
-                                    <div>
-                                        <h1 className="mt-4 text-xl font-bold">
+                                    <div className="w-1/4">
+                                        <h1 className="text-xl font-bold">
                                             Processos Registrados
                                         </h1>
                                         Total: {report.lawsuitCount}
                                     </div>
-                                    <div></div>
+                                    <div className="w-1/4">
+                                    </div>
                                 </div>
                                 <div>
                                     <h1 className="mt-4 text-xl font-bold">
@@ -181,7 +191,10 @@ const ReportPage = () => {
                                         Documentos: {report.documentCount}
                                     </div>
                                     <div>
-                                        Novos Associados: {report.associateCount}
+                                        Novos Associados: {report.newAssociateCount}
+                                    </div>
+                                    <div>
+                                        Total Associados: {report.associateCount}
                                     </div>
                                     <div>
                                         Processos Registrados: {report.lawsuitCount}
@@ -203,6 +216,7 @@ const ReportPage = () => {
                                         <Bar dataKey="document" fill="var(--color-document)" barSize={30} radius={2} />
                                         <Bar dataKey="associate" fill="var(--color-associate)" barSize={30} radius={2} />
                                         <Bar dataKey="lawsuit" fill="var(--color-lawsuit)" barSize={30} radius={2} />
+                                        <Bar dataKey="newAssociate" fill="var(--color-newAssociate)" barSize={30} radius={2} />
                                     </BarChart>
                                 </ChartContainer>
                             </>

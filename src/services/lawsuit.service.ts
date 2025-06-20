@@ -11,12 +11,13 @@ export class LawsuitService extends ApiService<Lawsuit> {
   async filter(
     client?: string,
     period?: PeriodFilter,
-    showArchived?: boolean
+    showArchived?: boolean,
+    page: number = 1,
   ): Promise<PaginatedResponse<Lawsuit[]>> {
     const response = await this.api.get<PaginatedResponse<Lawsuit[]>>(
       this.endpoint,
       {
-        params: { page: 1, limit: 16, client, period, archived: showArchived },
+        params: { page: page, limit: 15, client, period, archived: showArchived },
         withCredentials: true,
       }
     );

@@ -1,6 +1,6 @@
 "use client"
 
-import { ArchiveIcon, BriefcaseBusinessIcon, CalendarIcon, DollarSignIcon, DownloadIcon, FileIcon, Loader2Icon, PhoneIcon, StickyNoteIcon, Trash, UserIcon } from "lucide-react";
+import { ArchiveIcon, ArrowLeftIcon, ArrowRightIcon, BriefcaseBusinessIcon, CalendarIcon, DollarSignIcon, DownloadIcon, FileIcon, Loader2Icon, PhoneIcon, StickyNoteIcon, Trash, UserIcon } from "lucide-react";
 import { Header } from "../components/header";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
@@ -8,7 +8,7 @@ import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../components/ui/alert-dialog";
 import NewLawsuit from "../components/new-lawsuit.dialog";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LawsuitService } from "../services/lawsuit.service";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -29,9 +29,11 @@ const LawsuitPage = () => {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [period, setPeriod] = useState<PeriodFilter>(PeriodFilter.ALL);
     const [showArchived, setShowArchived] = useState<boolean>(false);
-    const { isLoading, isError, data, error } = useQuery({
-        queryKey: ['lawsuits', debouncedSearch, period, showArchived],
-        queryFn: () => lawsuitService.filter(search, period, showArchived),
+    const [page, setPage] = useState(1);
+    const { isLoading, isError, data, error, isFetching, isPlaceholderData } = useQuery({
+        queryKey: ['lawsuits', debouncedSearch, period, showArchived, page],
+        queryFn: () => lawsuitService.filter(search, period, showArchived, page),
+        placeholderData: keepPreviousData,
     });
     const mutation = useMutation({
         mutationFn: (id: string | number) => lawsuitService.delete(id),
@@ -169,7 +171,7 @@ const LawsuitPage = () => {
                                 <ArchiveIcon />
                                 Exibir arquivados
                             </Button>}
-                            <div className="flex gap-6 w-8/12">
+                            <div className="flex gap-6 w-7/12">
                                 <Input onChange={(e) => setSearch(e.target.value)} placeholder="Buscar processos..." />
                                 <Select value={period} onValueChange={(value) => setPeriod(value as PeriodFilter)}>
                                     <SelectTrigger className="w-[255px]">
@@ -184,12 +186,30 @@ const LawsuitPage = () => {
                                     </SelectContent>
                                 </Select>
                             </div>
+                            {data != null && <div className="flex gap-4">
+                                <Button
+                                    onClick={() => setPage((old) => Math.max(old - 1, 0))}
+                                    disabled={page === 1}
+                                >
+                                    <ArrowLeftIcon />
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        if (!isPlaceholderData) {
+                                            setPage((old) => old + 1)
+                                        }
+                                    }}
+                                    disabled={data.page * data.limit >= data.total}
+                                >
+                                    <ArrowRightIcon />
+                                </Button>
+                            </div>}
                         </div>
                         <div className="grid grid-cols-3 gap-6">
-                            {isLoading && (
+                            {(isFetching || isLoading) &&
                                 <div className="flex flex-col items-center justify-center col-span-4">
                                     <Loader2Icon className="animate-spin" />
-                                </div>)
+                                </div>
                             }
                             {isError && (
                                 <div className="text-3xl flex flex-col items-center justify-center col-span-4">
@@ -204,7 +224,7 @@ const LawsuitPage = () => {
                                     <span className="text-gray-500">Nenhum processo encontrado</span>
                                 </div>
                             )}
-                            {data != null && data.data.length > 0 && data.data.map((lawsuit, index) => (
+                            {!isFetching && data != null && data.data.length > 0 && data.data.map((lawsuit, index) => (
                                 <Card className="w-[400px] mt-4" key={index}>
                                     <CardHeader>
                                         <CardTitle className="flex justify-between items-center">

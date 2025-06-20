@@ -123,7 +123,7 @@ const EditLawsuit = ({ lawsuit }: { lawsuit: Lawsuit }) => {
             expirationDate: lawsuit.documentExpirationDate ? formatDateToPtBr(new Date(lawsuit.documentExpirationDate)) : undefined,
             orderDate: formatDateToPtBr(new Date(lawsuit.orderDate)),
             deadline: formatDateToPtBr(new Date(lawsuit.deadline)),
-            observation: lawsuit.description,
+            observation: lawsuit.description ?? '',
             orderTypeDescription: lawsuit.orderTypeDescription,
         }
     });

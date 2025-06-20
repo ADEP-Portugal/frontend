@@ -45,7 +45,7 @@ const FormSchema = z.object({
     expirationDate: z.string().optional(),
     orderDate: z.string({ required_error: "Campo obrigatório", }),
     deadline: z.string({ required_error: "Campo obrigatório", }),
-    observation: z.string().optional().nullable(),
+    observation: z.string().optional(),
     clientType: z.string({ required_error: "Campo obrigatório", }),
     paymentStatus: z.string({ required_error: "Campo obrigatório", }),
     documentUpload: z.array(z.string()).optional(),

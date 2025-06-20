@@ -122,7 +122,7 @@ const LawsuitPage = () => {
 
         //Client Information Values
         doc.text(lawsuit.client, 80, 100);
-        doc.text(formatDateToPtBr(new Date(lawsuit.birthday)), 80, 108);
+        doc.text(lawsuit.birthday ? formatDateToPtBr(new Date(lawsuit.birthday)) : "Não informado", 80, 108);
         doc.text(lawsuit.phone ?? "Não informado", 80, 116);
         doc.text(lawsuit.email ?? "Não informado", 80, 124);
 
